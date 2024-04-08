@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart/widgets/HomeForLogin/check_eligibility.dart';
 
 class PurchaseButton extends StatelessWidget {
   const PurchaseButton({super.key});
@@ -9,7 +10,11 @@ class PurchaseButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
       child: ElevatedButton(
         onPressed: () {
-          // Implement your purchase item logic
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const CheckEligibility(),
+            ),
+          );
         },
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.blue[800], backgroundColor: Colors.white, // Button text color
