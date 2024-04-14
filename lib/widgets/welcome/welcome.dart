@@ -37,26 +37,10 @@ class _WelcomeState extends State<Welcome> {
         backgroundColor:
             Colors.blue[900], // Adjust the color to match your branding
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image.asset(
-                'assets/a.png', // Replace with the path to your logo file
-                width: 300, // Set this to the appropriate width for your logo
-                height: 120, // Set this to the appropriate height for your logo
-              ),
-              const SizedBox(
-                  height: 24), // Provides some spacing between logo and text
-              const Text(
-                'Welcome to your banking portal',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+          child: Image.asset(
+            'assets/a.png', // Replace with the path to your logo file
+            width: 300, // Set this to the appropriate width for your logo
+            height: 120, // Set this to the appropriate height for your logo
           ),
         ),
       ),

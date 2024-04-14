@@ -40,8 +40,6 @@ class _TextFiledsState extends State<TextFileds> {
       ),
       keyboardType: widget.input,
       validator: widget.validate,
-   
-      
     );
   }
 }

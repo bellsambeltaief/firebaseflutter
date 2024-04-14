@@ -6,6 +6,7 @@ import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
+import 'package:smart/services/user_services.dart';
 import 'package:smart/widgets/sign/log_in/log_in.dart';
 
 class SignUp extends StatefulWidget {
@@ -23,6 +24,7 @@ class _SignUpState extends State<SignUp> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
   final _formKey = GlobalKey<FormState>();
+  final _userService = UserService(); //
 
   Future<void> _pickImage() async {
     try {
@@ -33,6 +35,47 @@ class _SignUpState extends State<SignUp> {
     } catch (e) {
       print("Error picking image: $e");
     }
+  }
+
+  void _signUp() async {
+    if (_formKey.currentState!.validate()) {
+      // If all data are correctly filled
+      Map<String, dynamic> userData = {
+        'email': emailController.text,
+        'password': passwordController.text,
+        'cin': cinController.text,
+      };
+
+      try {
+        await _userService.createUser(userData);
+        // Navigate to login on successful sign up
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const LogIn(),
+          ),
+        );
+      } catch (e) {
+        _showErrorDialog(e.toString());
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Sign Up Error"),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("Okay"),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -146,13 +189,7 @@ class _SignUpState extends State<SignUp> {
                   const SizedBox(height: 20.0),
                   Button(
                     label: "Sign Up",
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LogIn(),
-                        ),
-                      );
-                    },
+                    onTap: _signUp,
                   ),
                   NoAccount(
                     text1: 'You  have an account ? ',

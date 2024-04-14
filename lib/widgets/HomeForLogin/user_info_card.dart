@@ -22,7 +22,10 @@ class UserInfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.blue[800]),
+        leading: Icon(
+          icon,
+          color: Colors.blue[800],
+        ),
         title: Text(
           title,
           style: TextStyle(

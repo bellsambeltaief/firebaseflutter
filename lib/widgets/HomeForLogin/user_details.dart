@@ -1,40 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:smart/models/m_user.dart';
 import 'package:smart/widgets/HomeForLogin/user_info_card.dart';
 
 class UserDetails extends StatelessWidget {
-  const UserDetails({super.key});
+  final MUser? user;
+  const UserDetails({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: <Widget>[
         Text(
-          'John Doe | ID 278',
-          style: TextStyle(
+          user!.firstName + user!.lastName,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         UserInfoCard(
           title: 'Salary',
-          value: '\$2937.15',
+          value: user!.salary,
           icon: Icons.monetization_on,
         ),
         UserInfoCard(
           title: 'Age',
-          value: '28',
+          value: "${user!.age}",
           icon: Icons.cake,
         ),
         UserInfoCard(
           title: 'Marital Status',
-          value: 'Single',
+          value: user!.maritalStatus,
           icon: Icons.favorite,
         ),
         UserInfoCard(
           title: 'Employment',
-          value: 'Software Engineer',
+          value: user!.employment,
           icon: Icons.work,
         ),
       ],
