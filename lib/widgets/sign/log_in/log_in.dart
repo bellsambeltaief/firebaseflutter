@@ -30,7 +30,9 @@ class _LogInState extends State<LogIn> {
         ),
       );
     } catch (e) {
-      _showErrorDialog(e.toString()); // Show error message if login fails
+      _showErrorDialog(
+        e.toString(),
+      ); // Show error message if login fails
     }
   }
 
