@@ -1,64 +1,51 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../config.dart';
+import 'package:smart/models/m_login.dart';
+const String serverApi = "http://127.0.0.1:8000/api/v1";
+
+
 
 class UserService {
- // Method for user login
-  Future<dynamic> loginUser(String email, String password) async {
+  // Method for user login
+  Future<dynamic> loginUserWithModel(MLogin loginModel) async {
     var response = await http.post(
-      Uri.parse('${Config.apiUrl}login/'),  // Adjust the URL based on your backend endpoint
+      Uri.parse('http://$serverApi/accounts/login/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
+      body: jsonEncode(loginModel.toMap()), // Convert MLogin object to JSON
     );
-    return _handleResponse(response);}
-      dynamic _handleResponse(http.Response response) {
+    return _handleResponse(response);
+  }
+
+  dynamic _handleResponse(http.Response response) {
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);  // Assuming a token or user data is returned
+      var responseBody = jsonDecode(response.body);
+      print(responseBody); // Print the response body
+      return responseBody;
     } else {
       throw Exception('Failed to login: ${response.body}');
     }
   }
-  
- // Method for user create
-  Future<dynamic> createUser(Map<String, dynamic> userData) async {
-    var uri = Uri.parse('${Config.apiUrl}signup/');
-    var request = http.MultipartRequest('POST', uri)
-      ..fields['email'] = userData['email']
-      ..fields['password'] = userData['password']
-      ..fields['cin'] = userData['cin'];
 
-  
+  // Method for user registration
+  Future<dynamic> registerUser(Map<String, dynamic> userData) async {
+    var uri = Uri.parse('http://$serverApi/accounts/register/');
+    var request = http.MultipartRequest('POST', uri)
+      ..fields['client_ID '] = userData['client_ID ']
+      ..fields['client_Name'] = userData['client_Name']
+      ..fields['client_email '] = userData['client_email ']
+      ..fields['client_CIN'] = userData['client_CIN'];
 
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      var responseBody = jsonDecode(response.body);
+      print(responseBody); // Print the response body
+      return responseBody;
     } else {
       throw Exception('Failed to register user: ${response.body}');
     }
   }
-  Future<dynamic> updateUser(int id, Map<String, dynamic> userData) async {
-    var response = await http.put(
-      Uri.parse('${Config.apiUrl}users/$id/'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(userData),
-    );
-    _handleResponse(response);
-  }
 
-  Future<dynamic> deleteUser(int id) async {
-    var response = await http.delete(
-      Uri.parse('${Config.apiUrl}users/$id/'),
-    );
-    _handle(response);
-  }
-
-  dynamic _handle(http.Response response) {
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to process request: ${response.body}');
-    }
-  }
+  // Other methods for user management...
 }

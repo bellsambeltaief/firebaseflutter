@@ -9,8 +9,9 @@ import 'package:smart/widgets/sign/sign_up/sign_up.dart';
 import 'package:smart/widgets/HomeForLogin/Home.dart';
 
 class LogIn extends StatefulWidget {
-  final MLogin? userLogin;
-  const LogIn({super.key, this.userLogin});
+  const LogIn({
+    super.key,
+  });
 
   @override
   State<LogIn> createState() => _LogInState();
@@ -23,7 +24,11 @@ class _LogInState extends State<LogIn> {
 
   void _performLogin() async {
     try {
-      await _userService.loginUser(emailController.text, passwordController.text);
+      var loginModel = MLogin(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      await _userService.loginUserWithModel(loginModel);
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => const Home(),
@@ -69,7 +74,7 @@ class _LogInState extends State<LogIn> {
                 const SizedBox(height: 50.0),
                 TextFileds(
                   controller: emailController,
-                  label: widget.userLogin!.email,
+                  label: "Email",
                   obscure: false,
                   input: TextInputType.emailAddress,
                   validate: (value) => _validateEmail(value),
@@ -77,7 +82,7 @@ class _LogInState extends State<LogIn> {
                 const SizedBox(height: 20.0),
                 TextFileds(
                   controller: passwordController,
-                  label: widget.userLogin!.password,
+                  label: "Password",
                   obscure: true,
                   input: TextInputType.visiblePassword,
                   validate: (value) => _validatePassword(value),
@@ -91,9 +96,11 @@ class _LogInState extends State<LogIn> {
                   text1: 'You don\'t have an account ? ',
                   text2: "SignUp",
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SignUp()),
-                    );
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //     builder: (_) => const SignUp(),
+                    //   ),
+                    // );
                   },
                 ),
               ],
