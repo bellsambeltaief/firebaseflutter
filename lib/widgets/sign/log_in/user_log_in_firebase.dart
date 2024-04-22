@@ -1,77 +1,87 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
-import 'package:smart/models/m_login.dart';
-import 'package:smart/services/user_services.dart';
-import 'package:smart/widgets/sign/sign_up/sign_up.dart';
+import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
+import 'package:smart/widgets/sign/sign_up/user_sign_up_firebase.dart';
 import 'package:smart/widgets/HomeForLogin/Home.dart';
 
-class LogIn extends StatefulWidget {
-  const LogIn({
+class UserLogFirebase extends StatefulWidget {
+  const UserLogFirebase({
     super.key,
   });
 
   @override
-  State<LogIn> createState() => _LogInState();
+  State<UserLogFirebase> createState() => _UserLogFirebaseState();
 }
 
-class _LogInState extends State<LogIn> {
+class _UserLogFirebaseState extends State<UserLogFirebase> {
+  final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final _userService = UserService(); // Create an instance of UserService
 
-  void _performLogin() async {
-    try {
-      var loginModel = MLogin(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      var response = await _userService.loginUserWithModel(loginModel);
-      // Check if login was successful
-      if (response['message'] == 'Login Successful') {
-        // Navigate to Home widget
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const Home(),
-          ),
-        );
-        print('Login successful');
-      } else {
-        // Show error message if login fails
-        _showErrorDialog('Invalid email or password');
-        print('Invalid email or password');
+  /// Connection to firebase
+
+  void _logIn() async {
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    /// Check if all the fields aren't empty
+    if (email.isEmpty || password.isEmpty) {
+      // Display an error message or perform some other action
+      if (kDebugMode) {
+        print("All fields must be filled.");
       }
-    } catch (e) {
-      // Show error message if login fails
-      _showErrorDialog('Failed to login: $e');
-      print('Failed to login: $e');
+      return;
     }
-  }
 
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Login Error"),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: const Text("Okay"),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
+    User? user = await _auth.signInWithEmailAndPassword(
+      email,
+      password,
     );
+
+    if (user != null) {
+      if (kDebugMode) {
+        print("User is successfully created");
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const Home(),
+        ),
+      );
+    } else {
+      if (kDebugMode) {
+        print("Some error happened");
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.blue[900],
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          title: const Row(
+            children: [
+              SizedBox(
+                width: 70,
+              ),
+              Text('LOG IN'),
+            ],
+          ),
+        ),
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(40.0),
@@ -99,7 +109,7 @@ class _LogInState extends State<LogIn> {
                 const SizedBox(height: 40.0),
                 Button(
                   label: "Log In",
-                  onTap: _performLogin, // Call login function here
+                  onTap: _logIn, // Call login function here
                 ),
                 NoAccount(
                   text1: 'You don\'t have an account ? ',
@@ -107,7 +117,7 @@ class _LogInState extends State<LogIn> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const SignUp(),
+                        builder: (_) => const UserSignUpFirebase(),
                       ),
                     );
                   },

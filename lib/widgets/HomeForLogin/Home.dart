@@ -58,7 +58,7 @@ class _HomeState extends State<Home> {
                     SizedBox(height: 40),
                     BalanceCard(),
                     SizedBox(height: 20),
-                    UserDetails(user: null,),
+                    UserDetails(),
                     PurchaseButton(),
                     SizedBox(height: 20),
                   ],

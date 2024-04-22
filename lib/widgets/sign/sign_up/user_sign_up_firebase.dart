@@ -1,23 +1,25 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
-import 'package:smart/models/m_sign_up.dart';
-import 'package:smart/services/user_services.dart';
-import 'package:smart/widgets/sign/log_in/log_in.dart';
+import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
+import 'package:smart/widgets/sign/log_in/user_log_in_firebase.dart';
 
-class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+class UserSignUpFirebase extends StatefulWidget {
+  const UserSignUpFirebase({super.key});
 
   @override
-  State<SignUp> createState() => _SignUpState();
+  State<UserSignUpFirebase> createState() => _UserSignUpFirebaseState();
 }
 
-class _SignUpState extends State<SignUp> {
+class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
+  final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
@@ -25,7 +27,41 @@ class _SignUpState extends State<SignUp> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
   final _formKey = GlobalKey<FormState>();
-  final _userService = UserService(); //
+
+  /// Connection to firebase
+  void _signUp() async {
+    if (_formKey.currentState!.validate()) {
+      String firstName = firstNameController.text;
+      String lastName = lastNameController.text;
+      String email = emailController.text;
+      String password = passwordController.text;
+
+      User? user = await _auth.signUpWithEmailAndPassword(email, password, firstName, lastName);
+
+      /// check if all the fields aren't empty
+      if (email.isEmpty || firstName.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty) {
+        if (kDebugMode) {
+          print("All fields must be filled.");
+        }
+        return;
+      }
+
+      if (user != null) {
+        if (kDebugMode) {
+          print("User is successfully created");
+        }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const UserLogFirebase(),
+          ),
+        );
+      } else {
+        if (kDebugMode) {
+          print("Some error happened");
+        }
+      }
+    }
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -34,74 +70,10 @@ class _SignUpState extends State<SignUp> {
         _image = pickedFile;
       });
     } catch (e) {
-      print("Error picking image: $e");
-    }
-  }
-
-  void _signUp() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        var userData = MSignUpUser(
-          email: emailController.text,
-          password: passwordController.text,
-          firstName: firstNameController.text,
-          lastName: lastNameController.text,
-        );
-        var response = await _userService.registerUser(userData);
-        // Check if sign-up was successful
-        if (response['message'] == 'User created successfully') {
-          // Show success message
-          _showSuccessDialog('Sign up successful!');
-          // Navigate to login screen
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const LogIn(),
-            ),
-          );
-        } else {
-          // Show error message if sign-up fails
-          _showErrorDialog('Sign up failed: ${response['message']}');
-        }
-      } catch (e) {
-        _showErrorDialog(e.toString());
+      if (kDebugMode) {
+        print("Error picking image: $e");
       }
     }
-  }
-
-  void _showSuccessDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Sign Up Successful"),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: const Text("Okay"),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Sign Up Error"),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: const Text("Okay"),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -117,6 +89,25 @@ class _SignUpState extends State<SignUp> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.blue[900],
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          title: const Row(
+            children: [
+              SizedBox(
+                width: 70,
+              ),
+              Text('SIGN UP'),
+            ],
+          ),
+        ),
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -138,30 +129,6 @@ class _SignUpState extends State<SignUp> {
                   const SizedBox(height: 10.0),
                   _image != null ? Image.file(File(_image!.path)) : Container(),
                   const SizedBox(height: 20.0),
-                  TextFormField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an email';
-                      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                        return 'Enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
                   TextFormField(
                     controller: firstNameController,
                     decoration: InputDecoration(
@@ -209,6 +176,32 @@ class _SignUpState extends State<SignUp> {
                       return null;
                     },
                   ),
+
+                  const SizedBox(height: 10.0),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 10, 73, 167),
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an email';
+                      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
                   const SizedBox(height: 10.0),
 
                   /// TextField pour le mot de passe
@@ -232,13 +225,14 @@ class _SignUpState extends State<SignUp> {
                     label: "Sign Up",
                     onTap: _signUp,
                   ),
+                  const SizedBox(height: 10.0),
                   NoAccount(
                     text1: 'You  have an account ? ',
                     text2: "LogIn",
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => const LogIn(),
+                          builder: (_) => const UserLogFirebase(),
                         ),
                       );
                     },

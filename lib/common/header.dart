@@ -15,7 +15,7 @@ class Header extends StatelessWidget {
           'assets/a.png', // Replace with the path to your logo file
           width: 300, // Set this to the appropriate width for your logo
           height: 120,
-          color: Colors.blue, // Set this to the appropriate height for your logo
+          color: Colors.blue[900], // Set this to the appropriate height for your logo
         ),
         const SizedBox(height: 30),
         Text(
