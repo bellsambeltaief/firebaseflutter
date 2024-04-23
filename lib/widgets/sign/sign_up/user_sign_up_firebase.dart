@@ -286,6 +286,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   TextFileds(
                     controller: passwordController,
                     label: 'Password',
+                    errorText: 'This field must be filled.',
                     obscure: true,
                     input: TextInputType.visiblePassword,
                     validate: (value) {
@@ -301,6 +302,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   TextFormField(
                     controller: ageController,
                     decoration: InputDecoration(
+                      errorText: 'This field must be filled.',
                       labelText: 'Age',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
@@ -325,6 +327,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                     controller: maritalStatusController,
                     decoration: InputDecoration(
                       labelText: 'Marital Status',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -348,6 +351,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                     controller: salaryController,
                     decoration: InputDecoration(
                       labelText: 'Salary',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -371,6 +375,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                     controller: employmentController,
                     decoration: InputDecoration(
                       labelText: 'Employment',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),

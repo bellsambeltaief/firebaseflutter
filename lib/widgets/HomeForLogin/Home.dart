@@ -89,7 +89,6 @@ class _HomeState extends State<Home> {
                     ),
                     const PurchaseButton(),
                     const SizedBox(height: 20),
-                    const SizedBox(height: 20.0),
                     Button(
                       label: "Log Out",
                       onTap: () async {

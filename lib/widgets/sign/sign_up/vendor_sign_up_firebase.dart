@@ -156,6 +156,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     controller: userTypeController,
                     decoration: InputDecoration(
                       labelText: 'User Type',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -180,6 +181,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     controller: patentNumberController,
                     decoration: InputDecoration(
                       labelText: 'Patent Number',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -203,6 +205,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     controller: companyNameController,
                     decoration: InputDecoration(
                       labelText: 'Company Name',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -226,6 +229,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     controller: userNameController,
                     decoration: InputDecoration(
                       labelText: 'User Name',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -249,6 +253,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     controller: numeroCinController,
                     decoration: InputDecoration(
                       labelText: 'CIN Number',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -273,6 +278,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
+                      errorText: 'This field must be filled.',
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -299,6 +305,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   TextFileds(
                     controller: passwordController,
                     label: 'Password',
+                    errorText: 'This field must be filled.',
                     obscure: true,
                     input: TextInputType.visiblePassword,
                     validate: (value) {

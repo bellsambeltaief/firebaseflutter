@@ -8,12 +8,14 @@ class TextFileds extends StatefulWidget {
     required this.obscure,
     required this.input,
     required this.validate,
+    required this.errorText,
   });
 
   final TextEditingController controller;
   final TextInputType input;
   final String label;
   final String? Function(String?)? validate;
+  final String? errorText;
 
   final bool obscure;
 
@@ -28,6 +30,7 @@ class _TextFiledsState extends State<TextFileds> {
       controller: widget.controller,
       obscureText: widget.obscure,
       decoration: InputDecoration(
+        errorText: widget.errorText,
         labelText: widget.label,
         border: const OutlineInputBorder(),
         enabledBorder: OutlineInputBorder(
