@@ -305,7 +305,6 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   TextFileds(
                     controller: passwordController,
                     label: 'Password',
-                    errorText: 'This field must be filled.',
                     obscure: true,
                     input: TextInputType.visiblePassword,
                     validate: (value) {

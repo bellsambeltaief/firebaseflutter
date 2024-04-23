@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:smart/widgets/firebase_auth_imp/folder.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -250,6 +254,52 @@ class FirebaseAuthService {
         print("Error retrieving vendor profile: $e");
       }
       return null;
+    }
+  }
+
+  // Function to upload folder to Firebase Storage and save metadata to Firestore
+  Future<void> uploadFolder(String folderName, List<File> files, String userId) async {
+    try {
+      List<String> fileUrls = [];
+
+      // Upload each file in the folder to Firebase Storage
+      for (File file in files) {
+        final ref = FirebaseStorage.instance.ref().child('$folderName/${file.path.split('/').last}');
+        await ref.putFile(file);
+        final downloadUrl = await ref.getDownloadURL();
+        fileUrls.add(downloadUrl);
+      }
+
+      // Save folder details to Firestore, including user ID and file URLs
+      await FirebaseFirestore.instance
+          .collection('folders')
+          .doc(userId)
+          .collection('user_folders')
+          .doc(folderName)
+          .set({
+        'name': folderName,
+        'fileUrls': fileUrls,
+        'userId': userId,
+      });
+    } catch (e) {
+      print('Error uploading folder: $e');
+      throw e;
+    }
+  }
+
+// Function to retrieve folders from Firestore based on user ID
+  Future<List<Folder>> getUserFolders(String userId) async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('folders').doc(userId).collection('user_folders').get();
+      final folders = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Folder(name: data['name'], fileUrls: List<String>.from(data['fileUrls']));
+      }).toList();
+      return folders;
+    } catch (e) {
+      print('Error retrieving user folders: $e');
+      throw e;
     }
   }
 }

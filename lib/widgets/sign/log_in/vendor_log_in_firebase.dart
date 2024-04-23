@@ -122,7 +122,6 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                 TextFileds(
                   controller: emailController,
                   label: "Vendor Email",
-                  errorText: 'This field must be filled.',
                   obscure: false,
                   input: TextInputType.emailAddress,
                   validate: (value) => _validateEmail(value),
@@ -131,7 +130,6 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                 TextFileds(
                   controller: passwordController,
                   label: "Vendor Password",
-                  errorText: 'This field must be filled.',
                   obscure: true,
                   input: TextInputType.visiblePassword,
                   validate: (value) => _validatePassword(value),
