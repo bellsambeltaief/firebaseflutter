@@ -16,7 +16,7 @@ class Button extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue[900],
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
       ),
       child: Text(label),
     );

@@ -15,7 +15,7 @@ class UserInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
       elevation: 4,
       color: Colors.white,
       shape: RoundedRectangleBorder(

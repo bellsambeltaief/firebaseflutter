@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
     String email = emailController.text;
     String password = passwordController.text;
 
-    /// Check if all the fields aren't empty
+    // Check if all the fields aren't empty
     if (email.isEmpty || password.isEmpty) {
       // Display an error message or perform some other action
       if (kDebugMode) {
@@ -37,16 +38,18 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
       }
       return;
     }
+
     User? user = await _auth.signInVendor(
       email,
       password,
     );
 
     if (user != null) {
-      // Check if the user is a vendor
-      bool isVendor = false;
+      // Retrieve the vendor document from Firestore
+      DocumentSnapshot vendorDocument =
+          await FirebaseFirestore.instance.collection('vendors').doc(user.uid).get();
 
-      if (isVendor == true) {
+      if (vendorDocument.exists) {
         if (kDebugMode) {
           print("Vendor is successfully logged in");
         }
@@ -56,6 +59,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
           ),
         );
       } else {
+        // Show error dialog if vendor document does not exist
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -78,6 +82,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
         passwordController.clear();
       }
     } else {
+      // Handle login error
       if (kDebugMode) {
         print("Some error happened");
       }

@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
 class FirebaseAuthService {
@@ -15,6 +12,11 @@ class FirebaseAuthService {
     String password,
     String firstName,
     String lastName,
+    String userType,
+    int age,
+    String maritalStatus,
+    double salary,
+    String employment,
   ) async {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
@@ -28,15 +30,17 @@ class FirebaseAuthService {
           email,
           firstName,
           lastName,
-          null,
-          null,
-          "User",
+          userType,
+          age,
+          maritalStatus,
+          salary,
+          employment,
         );
       }
       return user;
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
-        print("Some error occurred during sign-up: $e");
+        print("Firebase Auth Error during sign-up: ${e.message}");
       }
       return null;
     }
@@ -50,6 +54,7 @@ class FirebaseAuthService {
     String numeroCin,
     String companyName,
     String patentNumber,
+    String userType,
   ) async {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
@@ -63,53 +68,60 @@ class FirebaseAuthService {
           userName,
           email,
           numeroCin,
-          'vendor',
+          userType,
           companyName,
           patentNumber,
         );
       }
       return user;
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
-        print("Some error occurred during vendor sign-up: $e");
+        print("Firebase Auth Error during vendor sign-up: ${e.message}");
       }
       return null;
     }
   }
 
+  // Generic sign-in method for users
   Future<User?> signInWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential credential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      User? user = credential.user;
-      if (user != null) {
-        String? userType = await _getUserType(user.uid);
-        if (userType == 'vendor') {
-          return user;
-        } else {
-          // User is not a vendor, handle accordingly
-          return null;
-        }
-      }
-      return user;
-    } catch (e) {
+      return credential.user;
+    } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
-        print("Some error occurred during sign-in: $e");
+        print("Firebase Auth Error during sign-in: ${e.message}");
       }
       return null;
     }
   }
 
-  Future<String?> _getUserType(String userId) async {
+// Get user type from Firestore
+  Future<String?> getUserType(String userId) async {
     try {
-      DocumentSnapshot snapshot = await _firestore.collection('users').doc(userId).get();
-      if (snapshot.exists) {
-        return snapshot.get('userType') as String?;
+      // Check if the user is a vendor
+      DocumentSnapshot vendorSnapshot = await _firestore.collection('vendors').doc(userId).get();
+      if (vendorSnapshot.exists && vendorSnapshot.data() != null) {
+        var vendorData = vendorSnapshot.data() as Map<String, dynamic>;
+        return vendorData['userType'] as String?;
       }
-      return null;
+
+      // If the user is not a vendor, check if they are a regular user
+      DocumentSnapshot userSnapshot = await _firestore.collection('users').doc(userId).get();
+      if (userSnapshot.exists && userSnapshot.data() != null) {
+        var userData = userSnapshot.data() as Map<String, dynamic>;
+        return userData['userType'] as String?;
+      } else {
+        // Handle the case where the document doesn't exist or data is null
+        if (kDebugMode) {
+          print("User document doesn't exist or data is null.");
+        }
+        return null;
+      }
     } catch (e) {
+      // Handle any other errors
       if (kDebugMode) {
         print("Error retrieving user type: $e");
       }
@@ -117,8 +129,9 @@ class FirebaseAuthService {
     }
   }
 
+  // Add vendor data to Firestore
   Future<void> _addVendorData(
-    String vendorId,
+    String userId,
     String userName,
     String email,
     String numeroCin,
@@ -127,7 +140,8 @@ class FirebaseAuthService {
     String patentNumber,
   ) async {
     try {
-      await _firestore.collection('vendors').doc(vendorId).set({
+      await _firestore.collection('vendors').doc(userId).set({
+        'userId': userId,
         'userName': userName,
         'email': email,
         'numeroCin': numeroCin,
@@ -137,65 +151,103 @@ class FirebaseAuthService {
       });
     } catch (e) {
       if (kDebugMode) {
-        print("Error occurred while adding vendor data: $e");
+        print("Error adding vendor data to Firestore: $e");
       }
     }
   }
 
-  Future<void> _addUserData(String userId, String email, String firstName, String lastName,
-      File? profileImage, List<File>? additionalFiles, String userType) async {
+  /// Add the user data
+  Future<void> _addUserData(
+    String userId,
+    String email,
+    String firstName,
+    String lastName,
+    String userType,
+    int age,
+    String maritalStatus,
+    double salary,
+    String employment,
+  ) async {
     try {
-      // Create a reference to the user document
-      DocumentReference userRef = _firestore.collection('users').doc(userId);
-
-      // Create a reference to the Cloud Storage instance
-      FirebaseStorage storage = FirebaseStorage.instance;
-
-      // Create a map of the user data
-      Map<String, dynamic> userData = {
+      await _firestore.collection('users').doc(userId).set({
+        'userId': userId,
         'email': email,
         'firstName': firstName,
         'lastName': lastName,
-      };
-
-      // If a profile image is provided, upload it to Cloud Storage and add the download URL to the user data
-      if (profileImage != null) {
-        String imageName = '$userId-profile-image.jpg';
-        String imageUrl = await _uploadFileToStorage(profileImage, 'user-profiles/$imageName', storage);
-        userData['profileImageUrl'] = imageUrl;
-      }
-
-      // If additional files are provided, upload them to Cloud Storage and add the download URLs to the user data
-      if (additionalFiles != null) {
-        List<String> fileUrls = await Future.wait(additionalFiles.map((file) async {
-          String fileName = '$userId-${additionalFiles.indexOf(file)}.${file.path.split('.').last}';
-          return await _uploadFileToStorage(file, 'user-files/$fileName', storage);
-        }));
-        userData['additionalFileUrls'] = fileUrls;
-      }
-
-      // Set the user data, including the image URLs if provided
-      await userRef.set(userData);
+        'userType': userType,
+        'age': age,
+        'maritalStatus': maritalStatus,
+        'salary': salary,
+        'employment': employment,
+      });
     } catch (e) {
       if (kDebugMode) {
-        print("Error occurred while adding user data: $e");
+        print("Error adding user data to Firestore: $e");
       }
     }
   }
 
-  Future<String> _uploadFileToStorage(File file, String path, FirebaseStorage storage) async {
-    // Upload the file to Cloud Storage and return the download URL
-    TaskSnapshot snapshot = await storage.ref(path).putFile(file);
-    return await snapshot.ref.getDownloadURL();
-  }
-
+  // Vendor-specific sign-in (could be expanded or modified as needed)
   Future<User?> signInVendor(String email, String password) async {
     try {
       UserCredential credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      return credential.user;
+      User? user = credential.user;
+      if (user != null) {
+        String? userType = await getUserType(user.uid);
+        if (userType == 'vendor') {
+          return user;
+        }
+      }
+      return null;
     } catch (e) {
       if (kDebugMode) {
-        print("Some error occurred during vendor sign-in: $e");
+        print("Error during vendor sign-in: $e");
+      }
+      return null;
+    }
+  }
+
+  // Method to log out the user
+  Future<void> logOut() async {
+    try {
+      await _auth.signOut();
+      if (kDebugMode) {
+        print("User has been logged out successfully.");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error logging out: $e");
+      }
+      throw FirebaseAuthException(code: 'LOGOUT_FAILED', message: 'Failed to log out.');
+    }
+  }
+
+  // Method to fetch full user profile from Firestore
+  Future<Map<String, dynamic>?> fetchUserProfile(String userId) async {
+    try {
+      DocumentSnapshot snapshot = await _firestore.collection('users').doc(userId).get();
+      if (snapshot.exists && snapshot.data() != null) {
+        return snapshot.data() as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error retrieving user profile: $e");
+      }
+      return null;
+    }
+  } // Method to fetch full vendor profile from Firestore
+
+  Future<Map<String, dynamic>?> fetchVendorProfile(String userId) async {
+    try {
+      DocumentSnapshot snapshot = await _firestore.collection('vendors').doc(userId).get();
+      if (snapshot.exists && snapshot.data() != null) {
+        return snapshot.data() as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error retrieving vendor profile: $e");
       }
       return null;
     }

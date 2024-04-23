@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,7 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
     String email = emailController.text;
     String password = passwordController.text;
 
-    /// Check if all the fields aren't empty
+    // Check if all the fields aren't empty
     if (email.isEmpty || password.isEmpty) {
       // Display an error message or perform some other action
       if (kDebugMode) {
@@ -38,24 +39,58 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
       return;
     }
 
-    User? user = await _auth.signInWithEmailAndPassword(
-      email,
-      password,
-    );
+    try {
+      User? user = await _auth.signInWithEmailAndPassword(email, password);
 
-    if (user != null) {
-      if (kDebugMode) {
-        print("User is successfully created");
+      if (user != null) {
+        // Retrieve the user document from Firestore
+        DocumentSnapshot userDocument =
+            await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        print("userrrrrrrrrrrrrrrrrrrr ${user.uid}");
+        // Retrieve the userType field from the document
+        Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
+
+        if (userData != null) {
+          String? userType = userData['userType'];
+
+          if (userType == 'vendor') {
+            if (kDebugMode) {
+              print("You are not a user");
+            }
+          } else if (userType == 'user') {
+            if (kDebugMode) {
+              print("Connection successfully");
+            }
+            // Navigate to the user-specific screen
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const Home(),
+              ),
+            );
+          } else {
+            // Handle unsupported user type
+            if (kDebugMode) {
+              print("Unsupported user type: $userType");
+            }
+          }
+        } else {
+          // Handle missing user data
+          if (kDebugMode) {
+            print("User data not found");
+          }
+        }
+      } else {
+        // Handle null user
+        if (kDebugMode) {
+          print("User is null");
+        }
       }
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const Home(),
-        ),
-      );
-    } else {
+    } catch (e) {
+      // Handle login error
       if (kDebugMode) {
-        print("Some error happened");
+        print("Login error: $e");
       }
+      // Display an error message or perform some other action
     }
   }
 

@@ -20,6 +20,7 @@ class SignChoices extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 20),
               Center(
                 child: Image.asset(
                   'assets/a.png', // Replace with the path to your logo file
@@ -28,6 +29,7 @@ class SignChoices extends StatelessWidget {
                   color: Colors.blue[900],
                 ),
               ),
+              const SizedBox(height: 40),
               const Padding(
                 padding: EdgeInsets.all(20),
                 child: Text(
@@ -39,7 +41,6 @@ class SignChoices extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 40),
               Button(
                 label: 'Sign In as a Vendor',
                 onTap: () {

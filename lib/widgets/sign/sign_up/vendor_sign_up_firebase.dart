@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -27,54 +28,58 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final userNameController = TextEditingController();
   final numeroCinController = TextEditingController();
   final passwordController = TextEditingController();
+  final userTypeController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   XFile? _patentImage;
   final _formKey = GlobalKey<FormState>();
 
-  /// Connection to firebase
-  void _signUp() async {
-    String email = emailController.text;
-    String patentNumber = patentNumberController.text;
-    String companyName = companyNameController.text;
-    String userName = userNameController.text;
-    String numeroCin = numeroCinController.text;
-    String password = passwordController.text;
+  void signUpVendor() async {
+    if (_formKey.currentState!.validate()) {
+      String email = emailController.text.trim();
+      String patentNumber = patentNumberController.text.trim();
+      String companyName = companyNameController.text.trim();
+      String userName = userNameController.text.trim();
+      String numeroCin = numeroCinController.text.trim();
+      String password = passwordController.text;
+      String userType = userTypeController.text.trim();
 
-    /// Check if all the fields aren't empty
-    if (email.isEmpty ||
-        patentNumber.isEmpty ||
-        companyName.isEmpty ||
-        userName.isEmpty ||
-        numeroCin.isEmpty ||
-        password.isEmpty) {
-      // Display an error message or perform some other action
-      if (kDebugMode) {
-        print("All fields must be filled.");
+      if ([email, patentNumber, companyName, userName, numeroCin, password, userType]
+          .any((element) => element.isEmpty)) {
+        if (kDebugMode) {
+          print("All fields must be filled.");
+        }
+        return;
       }
-      return;
-    }
 
-    User? user = await _auth.signUpVendor(
-      userName,
-      email,
-      password,
-      numeroCin,
-      companyName,
-      patentNumber,
-    );
+      try {
+        User? user = await _auth.signUpVendor(
+            userName, email, password, numeroCin, companyName, patentNumber, userType);
 
-    if (user != null) {
-      if (kDebugMode) {
-        print("Vendor is successfully created");
-      }
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const VendorLogFirebase(),
-        ),
-      );
-    } else {
-      if (kDebugMode) {
-        print("Some error happened");
+        if (user != null) {
+          if (kDebugMode) {
+            print("Vendor is successfully created");
+          }
+
+          // Save vendor details to Firestore (excluding the password)
+          await FirebaseFirestore.instance.collection('vendors').doc(user.uid).set({
+            'email': email,
+            'patentNumber': patentNumber,
+            'companyName': companyName,
+            'userName': userName,
+            'numeroCin': numeroCin,
+            'userType': userType,
+          });
+
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VendorLogFirebase()));
+        } else {
+          if (kDebugMode) {
+            print("Failed to create vendor account. Please check your input and try again.");
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print("Sign up error: $e");
+        }
       }
     }
   }
@@ -100,6 +105,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
     companyNameController.dispose();
     numeroCinController.dispose();
     passwordController.dispose();
+    userTypeController.dispose();
     super.dispose();
   }
 
@@ -146,6 +152,30 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   const SizedBox(height: 10.0),
                   _patentImage != null ? Image.file(File(_patentImage!.path)) : Container(),
                   const SizedBox(height: 20.0),
+                  TextFormField(
+                    controller: userTypeController,
+                    decoration: InputDecoration(
+                      labelText: 'User Type',
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 10, 73, 167),
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
+                    keyboardType: TextInputType.text,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your Type';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10.0),
+
                   TextFormField(
                     controller: patentNumberController,
                     decoration: InputDecoration(
@@ -284,7 +314,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   const SizedBox(height: 20.0),
                   Button(
                     label: "Sign Up as a Vendor",
-                    onTap: _signUp,
+                    onTap: signUpVendor,
                   ),
                   const SizedBox(height: 10.0),
                   NoAccount(
