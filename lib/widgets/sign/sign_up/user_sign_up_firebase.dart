@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -30,9 +31,34 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final maritalStatusController = TextEditingController();
   final salaryController = TextEditingController();
   final employmentController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
-  final _formKey = GlobalKey<FormState>();
+
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      setState(() {
+        _image = pickedFile;
+      });
+    } catch (e) {
+      print("Error picking image: $e");
+    }
+  }
+
+  Future<String> uploadFile(XFile file) async {
+    try {
+      final ref =
+          FirebaseStorage.instance.ref().child('user_uploads/${DateTime.now().millisecondsSinceEpoch}');
+      await ref.putFile(File(file.path));
+      final downloadUrl = await ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading file: $e');
+      return '';
+    }
+  }
 
   /// Connection to firebase
   void _signUp() async {
@@ -75,6 +101,22 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           employment,
         );
 
+        /// Upload file if selected
+        if (_image != null) {
+          String imageUrl = await uploadFile(_image!);
+          // Optionally save imageUrl to Firestore or use it as needed
+          if (imageUrl.isNotEmpty) {
+            // File uploaded successfully
+            if (kDebugMode) {
+              print("File uploaded. Image URL: $imageUrl");
+            }
+          } else {
+            // Error uploading file
+            if (kDebugMode) {
+              print("Error uploading file");
+            }
+          }
+        }
         if (user != null) {
           if (kDebugMode) {
             print("User is successfully created");
@@ -108,19 +150,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           print("Sign up error: $e");
         }
         // Display an error message or perform some other action
-      }
-    }
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-      setState(() {
-        _image = pickedFile;
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error picking image: $e");
       }
     }
   }
@@ -174,13 +203,11 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   const Header(
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
-
-                  const SizedBox(height: 20.0),
                   ElevatedButton(
                     onPressed: _pickImage,
-                    child: const Text('Upload Identity Card'),
+                    child: const Text('Add you CIN image'),
                   ),
-                  const SizedBox(height: 10.0),
+                  const SizedBox(height: 20.0),
                   _image != null ? Image.file(File(_image!.path)) : Container(),
                   const SizedBox(height: 20.0),
                   TextFormField(

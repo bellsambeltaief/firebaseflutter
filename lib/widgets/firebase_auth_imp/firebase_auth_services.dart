@@ -265,7 +265,8 @@ class FirebaseAuthService {
 
       // Upload each file in the folder to Firebase Storage
       for (File file in files) {
-        final ref = FirebaseStorage.instance.ref().child('$folderName/${file.path.split('/').last}');
+        final ref = FirebaseStorage.instance.ref().child('user_uploads/${file.path.split('/').last}');
+
         await ref.putFile(file);
         final downloadUrl = await ref.getDownloadURL();
         fileUrls.add(downloadUrl);
