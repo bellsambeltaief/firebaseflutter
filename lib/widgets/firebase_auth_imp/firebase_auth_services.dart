@@ -29,6 +29,7 @@ class FirebaseAuthService {
       );
       User? user = credential.user;
       if (user != null) {
+        // Add user data to Firestore
         await _addUserData(
           user.uid,
           email,
