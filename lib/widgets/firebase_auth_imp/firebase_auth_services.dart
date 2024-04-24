@@ -17,9 +17,9 @@ class FirebaseAuthService {
     String firstName,
     String lastName,
     String userType,
-    int age,
+    String age,
     String maritalStatus,
-    double salary,
+    String salary,
     String employment,
   ) async {
     try {
@@ -35,7 +35,7 @@ class FirebaseAuthService {
           email,
           firstName,
           lastName,
-          userType,
+          "User",
           age,
           maritalStatus,
           salary,
@@ -73,7 +73,7 @@ class FirebaseAuthService {
           userName,
           email,
           numeroCin,
-          userType,
+          "Vendor",
           companyName,
           patentNumber,
         );
@@ -168,9 +168,9 @@ class FirebaseAuthService {
     String firstName,
     String lastName,
     String userType,
-    int age,
+    String age,
     String maritalStatus,
-    double salary,
+    String salary,
     String employment,
   ) async {
     try {

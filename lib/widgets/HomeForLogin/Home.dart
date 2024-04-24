@@ -5,8 +5,8 @@ import 'package:smart/common/button.dart';
 import 'package:smart/widgets/HomeForLogin/balance_card.dart';
 import 'package:smart/widgets/HomeForLogin/purchase_button.dart';
 import 'package:smart/widgets/HomeForLogin/user_details.dart';
+import 'package:smart/widgets/authentification/log_in/user_log_in_firebase.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
-import 'package:smart/widgets/sign/log_in/user_log_in_firebase.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);

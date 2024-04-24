@@ -8,7 +8,7 @@ import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 import 'package:smart/widgets/HomeForLogin/Home.dart';
-import 'package:smart/widgets/sign/sign_up/vendor_sign_up_firebase.dart';
+import 'package:smart/widgets/authentification/sign_up/vendor_sign_up_firebase.dart';
 
 class VendorLogFirebase extends StatefulWidget {
   const VendorLogFirebase({
@@ -23,68 +23,61 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  String? emailError;
+  String? passwordError;
 
   /// Connection to firebase
 
   void _logIn() async {
-    String email = emailController.text;
-    String password = passwordController.text;
+    setState(() {
+      emailError = null;
+      passwordError = null;
+    });
+    if (_formKey.currentState!.validate()) {
+      String email = emailController.text;
+      String password = passwordController.text;
 
-    // Check if all the fields aren't empty
-    if (email.isEmpty || password.isEmpty) {
-      // Display an error message or perform some other action
-      if (kDebugMode) {
-        print("All fields must be filled.");
+      if ([
+        email,
+        password,
+      ].any((element) => element.isEmpty)) {
+        setState(() {
+          if (email.isEmpty) {
+            emailError = 'Please enter your Email';
+          }
+
+          if (password.isEmpty) {
+            passwordError = 'Please enter your password';
+          }
+        });
+        return;
       }
-      return;
-    }
+      User? user = await _auth.signInVendor(
+        email,
+        password,
+      );
 
-    User? user = await _auth.signInVendor(
-      email,
-      password,
-    );
+      if (user != null) {
+        // Retrieve the vendor document from Firestore
+        DocumentSnapshot vendorDocument =
+            await FirebaseFirestore.instance.collection('vendors').doc(user.uid).get();
 
-    if (user != null) {
-      // Retrieve the vendor document from Firestore
-      DocumentSnapshot vendorDocument =
-          await FirebaseFirestore.instance.collection('vendors').doc(user.uid).get();
-
-      if (vendorDocument.exists) {
-        if (kDebugMode) {
-          print("Vendor is successfully logged in");
+        if (vendorDocument.exists) {
+          if (kDebugMode) {
+            print("Vendor is successfully logged in");
+          }
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const Home(),
+            ),
+          );
         }
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const Home(),
-          ),
-        );
       } else {
-        // Show error dialog if vendor document does not exist
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Error'),
-              content: Text('You have to be a vendor to sign in here.'),
-              actions: [
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-        // Clear the email and password fields
-        emailController.clear();
-        passwordController.clear();
-      }
-    } else {
-      // Handle login error
-      if (kDebugMode) {
-        print("Some error happened");
+        // Handle login error
+        if (kDebugMode) {
+          print("Some error happened");
+        }
       }
     }
   }
@@ -120,6 +113,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                 const Header(text: 'Please login in order to proceed'),
                 const SizedBox(height: 50.0),
                 TextFileds(
+                  error: emailError,
                   controller: emailController,
                   label: "Vendor Email",
                   obscure: false,
@@ -128,6 +122,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                 ),
                 const SizedBox(height: 20.0),
                 TextFileds(
+                  error: passwordError,
                   controller: passwordController,
                   label: "Vendor Password",
                   obscure: true,
@@ -137,7 +132,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                 const SizedBox(height: 40.0),
                 Button(
                   label: "Log In as a Vendor",
-                  onTap: _logIn, // Call login function here
+                  onTap: _logIn, 
                 ),
                 NoAccount(
                   text1: 'You don\'t have an account ? ',

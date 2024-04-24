@@ -10,7 +10,7 @@ import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
-import 'package:smart/widgets/sign/log_in/vendor_log_in_firebase.dart';
+import 'package:smart/widgets/authentification/log_in/vendor_log_in_firebase.dart';
 
 class VendorSignUpFirebase extends StatefulWidget {
   const VendorSignUpFirebase({super.key});
@@ -32,8 +32,22 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final ImagePicker _picker = ImagePicker();
   XFile? _patentImage;
   final _formKey = GlobalKey<FormState>();
-
+  String? emailError;
+  String? patentNumberError;
+  String? companyNameError;
+  String? userNameError;
+  String? numeroCinError;
+  String? passwordError;
   void signUpVendor() async {
+    setState(() {
+      emailError = null;
+      patentNumberError = null;
+      companyNameError = null;
+      userNameError = null;
+      numeroCinError = null;
+      passwordError = null;
+    });
+
     if (_formKey.currentState!.validate()) {
       String email = emailController.text.trim();
       String patentNumber = patentNumberController.text.trim();
@@ -43,17 +57,46 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
       String password = passwordController.text;
       String userType = userTypeController.text.trim();
 
-      if ([email, patentNumber, companyName, userName, numeroCin, password, userType]
-          .any((element) => element.isEmpty)) {
-        if (kDebugMode) {
-          print("All fields must be filled.");
-        }
+      if ([
+        email,
+        patentNumber,
+        companyName,
+        userName,
+        numeroCin,
+        password,
+      ].any((element) => element.isEmpty)) {
+        setState(() {
+          if (email.isEmpty) {
+            emailError = 'Please enter your Email';
+          }
+          if (patentNumber.isEmpty) {
+            patentNumberError = 'Please enter your Patent Number';
+          }
+          if (companyName.isEmpty) {
+            companyNameError = 'Please enter your Company Name';
+          }
+          if (userName.isEmpty) {
+            userNameError = 'Please enter your User Name';
+          }
+          if (numeroCin.isEmpty) {
+            numeroCinError = 'Please enter your CIN Number';
+          }
+          if (password.isEmpty) {
+            passwordError = 'Please enter your password';
+          }
+        });
         return;
       }
-
       try {
         User? user = await _auth.signUpVendor(
-            userName, email, password, numeroCin, companyName, patentNumber, userType);
+          userName,
+          email,
+          password,
+          numeroCin,
+          companyName,
+          patentNumber,
+          userType,
+        );
 
         if (user != null) {
           if (kDebugMode) {
@@ -152,157 +195,96 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   const SizedBox(height: 10.0),
                   _patentImage != null ? Image.file(File(_patentImage!.path)) : Container(),
                   const SizedBox(height: 20.0),
-                  TextFormField(
-                    controller: userTypeController,
-                    decoration: InputDecoration(
-                      labelText: 'User Type',
-                      errorText: 'This field must be filled.',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your Type';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10.0),
 
-                  TextFormField(
+                  /// TextField pour le numéro du patente
+                  TextFileds(
+                    error: patentNumberError,
                     controller: patentNumberController,
-                    decoration: InputDecoration(
-                      labelText: 'Patent Number',
-                      errorText: 'This field must be filled.',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your patent number';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10.0),
-                  TextFormField(
-                    controller: companyNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Company Name',
-                      errorText: 'This field must be filled.',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your company name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10.0),
-                  TextFormField(
-                    controller: userNameController,
-                    decoration: InputDecoration(
-                      labelText: 'User Name',
-                      errorText: 'This field must be filled.',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your manager name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10.0),
-                  TextFormField(
-                    controller: numeroCinController,
-                    decoration: InputDecoration(
-                      labelText: 'CIN Number',
-                      errorText: 'This field must be filled.',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your CIN';
+                    label: 'Patent Number',
+                    obscure: false,
+                    input: TextInputType.number,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your Patent Number';
                       }
                       return null;
                     },
                   ),
 
                   const SizedBox(height: 10.0),
-                  TextFormField(
+
+                  /// Text Field pour le nom du company
+                  TextFileds(
+                    error: companyNameError,
+                    controller: companyNameController,
+                    label: 'Company Name',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your Company Name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10.0),
+
+                  /// TextField pour le numéro du CIN
+                  TextFileds(
+                    error: numeroCinError,
+                    controller: numeroCinController,
+                    label: 'CIN Number',
+                    obscure: false,
+                    input: TextInputType.number,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your CIN Number';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 10.0),
+
+                  /// Text field pour le nom d'utilisateur
+                  TextFileds(
+                    error: userNameError,
+                    controller: userNameController,
+                    label: 'User Name',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your User Name';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 10.0),
+
+                  /// Text field pour l'adresse Email
+                  TextFileds(
+                    error: emailError,
                     controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      errorText: 'This field must be filled.',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
+                    label: 'Email',
+                    obscure: false,
+                    input: TextInputType.emailAddress,
+                    validate: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter an email';
+                        return 'Please enter an Email';
                       } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                         return 'Enter a valid email address';
                       }
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 10.0),
 
                   /// TextField pour le mot de passe
                   TextFileds(
+                    error: passwordError,
                     controller: passwordController,
                     label: 'Password',
                     obscure: true,
