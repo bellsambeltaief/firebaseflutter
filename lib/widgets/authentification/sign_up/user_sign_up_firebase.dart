@@ -296,7 +296,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                         ),
                       ),
                     ),
-                    keyboardType: TextInputType.text,
+                    keyboardType: TextInputType.number,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -342,7 +342,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                         ),
                       ),
                     ),
-                    keyboardType: TextInputType.text,
+                    keyboardType: TextInputType.number,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
