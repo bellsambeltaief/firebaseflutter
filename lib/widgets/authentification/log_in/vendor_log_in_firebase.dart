@@ -6,7 +6,7 @@ import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
-import 'package:smart/widgets/client_home/client_home.dart';
+import 'package:smart/vendor_home/vendor_home.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 import 'package:smart/widgets/authentification/sign_up/vendor_sign_up_firebase.dart';
 
@@ -69,7 +69,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
           }
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => const ClientHome(),
+              builder: (_) => const VendorHome(),
             ),
           );
         }
