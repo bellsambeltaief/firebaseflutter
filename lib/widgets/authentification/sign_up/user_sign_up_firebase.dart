@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
+import 'package:smart/services/storage_service.dart';
 import 'package:smart/widgets/authentification/log_in/user_log_in_firebase.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 
@@ -26,19 +31,20 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final maritalStatusController = TextEditingController();
   final salaryController = TextEditingController();
   final employmentController = TextEditingController();
-
+  final imagePathController = TextEditingController();
+  final Storage storage = Storage();
   final _formKey = GlobalKey<FormState>();
 
   /// Connection to firebase
   void _signUp() async {
     if (_formKey.currentState!.validate()) {
       String userName = userNameController.text;
-
       String email = emailController.text;
       String password = passwordController.text;
       String userType = userTypeController.text;
       int age = int.tryParse(ageController.text) ?? 0;
       String maritalStatus = maritalStatusController.text;
+      // String imagePath = imagePathController.text;
       double salary = double.tryParse(salaryController.text) ?? 0.0;
       String employment = employmentController.text;
 
@@ -46,9 +52,9 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           userName.isEmpty ||
           password.isEmpty ||
           userType.isEmpty ||
-          age.isOdd ||
+          age <= 0 || // Adjusted validation condition for age
           maritalStatus.isEmpty ||
-          salary.isInfinite ||
+          salary <= 0.0 || // Adjusted validation condition for salary
           employment.isEmpty) {
         if (kDebugMode) {
           print("All fields must be filled.");
@@ -153,7 +159,49 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   const Header(
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
+                  Center(
+                    child: ElevatedButton(
+                        child: const Text("Upload your CIN picture"),
+                        onPressed: () async {
+                          final results = await FilePicker.platform.pickFiles(
+                            allowMultiple: false,
+                            type: FileType.custom,
+                            allowedExtensions: ['png', 'jpeg'],
+                          );
+                          if (results == null) {
+                            const Text("No file selected");
 
+                            return;
+                          }
+
+                          final path = results.files.single.path;
+                          final fileName = results.files.single.name;
+                          storage.UploadFile(path!, fileName).then(
+                            (value) => print("DONE"),
+                          );
+
+                          ///Uploading the file to Firebase Storage
+                          final firebase_storage.UploadTask uploadTask = firebase_storage
+                              .FirebaseStorage.instance
+                              .ref('testing/$fileName')
+                              .putFile(File(path));
+
+                          // Getting download URL after upload
+                          uploadTask.whenComplete(() async {
+                            final downloadURL = await firebase_storage.FirebaseStorage.instance
+                                .ref('testing/$fileName')
+                                .getDownloadURL();
+
+                            print("Download URL: $downloadURL");
+                          });
+                          if (kDebugMode) {
+                            print("  file : $fileName");
+                          }
+                          if (kDebugMode) {
+                            print(" path : $path");
+                          }
+                        }),
+                  ),
                   const SizedBox(height: 20.0),
                   TextFormField(
                     controller: userTypeController,

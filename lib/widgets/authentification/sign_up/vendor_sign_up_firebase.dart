@@ -95,6 +95,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           companyName,
           patentNumber,
           userType,
+          
         );
 
         if (user != null) {
