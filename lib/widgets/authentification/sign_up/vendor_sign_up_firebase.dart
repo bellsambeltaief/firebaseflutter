@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
@@ -29,6 +32,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final numeroCinController = TextEditingController();
   final passwordController = TextEditingController();
   final userTypeController = TextEditingController();
+  final imagePathController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   String? emailError;
@@ -55,6 +59,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
       String numeroCin = numeroCinController.text.trim();
       String password = passwordController.text;
       String userType = userTypeController.text.trim();
+      String imagePath = imagePathController.text.trim();
 
       if ([
         email,
@@ -95,7 +100,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           companyName,
           patentNumber,
           userType,
-          
+          imagePath,
         );
 
         if (user != null) {
@@ -117,6 +122,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
             'numeroCin': numeroCin,
             'userType': userType,
             'password': password,
+            'imagePath': imagePath,
           });
         } else {
           if (kDebugMode) {
@@ -196,9 +202,25 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                           final path = results.files.single.path;
                           final fileName = results.files.single.name;
 
+                          /// Uploading the file to Firebase Storage
                           storage.UploadFile(path!, fileName).then(
                             (value) => print("DONE"),
                           );
+
+                          ///Puting the file from Firebase Storage
+                          final firebase_storage.UploadTask uploadTask = firebase_storage
+                              .FirebaseStorage.instance
+                              .ref('testing/$fileName')
+                              .putFile(File(path));
+
+                          // Getting download URL after upload
+                          uploadTask.whenComplete(() async {
+                            final downloadURL = await firebase_storage.FirebaseStorage.instance
+                                .ref('testing/$fileName')
+                                .getDownloadURL();
+
+                            print("Download URL: $downloadURL");
+                          });
                           if (kDebugMode) {
                             print("  file : $fileName");
                           }

@@ -34,6 +34,48 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final imagePathController = TextEditingController();
   final Storage storage = Storage();
   final _formKey = GlobalKey<FormState>();
+  late File? _pickedImage;
+
+  Future<void> _pickImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ['png', 'jpeg'],
+    );
+    if (result != null) {
+      setState(() {
+        _pickedImage = File(result.files.single.path!);
+      });
+    } else {
+      print("No file selected");
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_pickedImage != null) {
+      final fileName = _pickedImage!.path.split('/').last;
+
+      // Uploading the file to your storage library
+      final uploadTask = storage.UploadFile(_pickedImage!.path, fileName);
+
+      // Getting download URL after upload
+      uploadTask.then((value) {
+        firebase_storage.FirebaseStorage.instance
+            .ref('testing/$fileName')
+            .getDownloadURL()
+            .then((downloadURL) {
+          print("Download URL: $downloadURL");
+        });
+      });
+
+      if (kDebugMode) {
+        print("File Name: $fileName");
+        print("Path: ${_pickedImage!.path}");
+      }
+    } else {
+      print("No image picked");
+    }
+  }
 
   /// Connection to firebase
   void _signUp() async {
@@ -44,7 +86,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
       String userType = userTypeController.text;
       int age = int.tryParse(ageController.text) ?? 0;
       String maritalStatus = maritalStatusController.text;
-      // String imagePath = imagePathController.text;
+      String imagePath = imagePathController.text;
       double salary = double.tryParse(salaryController.text) ?? 0.0;
       String employment = employmentController.text;
 
@@ -72,13 +114,40 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           maritalStatus,
           salary,
           employment,
+          imagePath,
         );
 
         if (user != null) {
           if (kDebugMode) {
             print("User is successfully created");
           }
+          if (_pickedImage == null) {
+            if (kDebugMode) {
+              print("Please pick an image");
+            }
+            return;
+          }
 
+          // Upload the image to storage
+          final fileName = _pickedImage!.path.split('/').last;
+          final firebase_storage.Reference storageRef =
+              firebase_storage.FirebaseStorage.instance.ref('UsersImages/$fileName');
+          await storageRef.putFile(_pickedImage!);
+
+          // Get the download URL
+          final downloadURL = await storageRef.getDownloadURL();
+
+          // Now you can proceed with the sign-up process with the image downloadURL
+          final email = emailController.text;
+          final password = passwordController.text;
+
+          // Perform your sign-up logic here, passing the downloadURL along with other user details
+          if (kDebugMode) {
+            print("Signing up with email: $email, password: $password, imagePath: $downloadURL");
+          }
+          if (_pickedImage != null) {
+            await _uploadImage(); // Upload the picked image
+          }
           // Save user details to Firestore
           await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
             'userId': user.uid,
@@ -90,6 +159,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
             'salary': salary,
             'employment': employment,
             'password': password,
+            'imagePath': downloadURL,
           });
 
           Navigator.of(context).push(
@@ -161,46 +231,9 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   ),
                   Center(
                     child: ElevatedButton(
-                        child: const Text("Upload your CIN picture"),
-                        onPressed: () async {
-                          final results = await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: ['png', 'jpeg'],
-                          );
-                          if (results == null) {
-                            const Text("No file selected");
-
-                            return;
-                          }
-
-                          final path = results.files.single.path;
-                          final fileName = results.files.single.name;
-                          storage.UploadFile(path!, fileName).then(
-                            (value) => print("DONE"),
-                          );
-
-                          ///Uploading the file to Firebase Storage
-                          final firebase_storage.UploadTask uploadTask = firebase_storage
-                              .FirebaseStorage.instance
-                              .ref('testing/$fileName')
-                              .putFile(File(path));
-
-                          // Getting download URL after upload
-                          uploadTask.whenComplete(() async {
-                            final downloadURL = await firebase_storage.FirebaseStorage.instance
-                                .ref('testing/$fileName')
-                                .getDownloadURL();
-
-                            print("Download URL: $downloadURL");
-                          });
-                          if (kDebugMode) {
-                            print("  file : $fileName");
-                          }
-                          if (kDebugMode) {
-                            print(" path : $path");
-                          }
-                        }),
+                      onPressed: _pickImage,
+                      child: const Text("Upload your CIN picture"),
+                    ),
                   ),
                   const SizedBox(height: 20.0),
                   TextFormField(

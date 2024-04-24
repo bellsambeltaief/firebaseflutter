@@ -16,6 +16,7 @@ class FirebaseAuthService {
     String maritalStatus,
     double salary,
     String employment,
+    String imagePath,
   ) async {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
@@ -34,6 +35,7 @@ class FirebaseAuthService {
           maritalStatus,
           salary,
           employment,
+          imagePath,
         );
       }
       return user;
@@ -54,6 +56,7 @@ class FirebaseAuthService {
     String companyName,
     String patentNumber,
     String userType,
+    String imagePath,
   ) async {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
@@ -70,6 +73,7 @@ class FirebaseAuthService {
           userType,
           companyName,
           patentNumber,
+          imagePath,
         );
       }
       return user;
@@ -137,6 +141,7 @@ class FirebaseAuthService {
     String userType,
     String companyName,
     String patentNumber,
+    String imagePath,
   ) async {
     try {
       await _firestore.collection('vendors').doc(userId).set({
@@ -147,6 +152,7 @@ class FirebaseAuthService {
         'companyName': companyName,
         'patentNumber': patentNumber,
         'userType': userType,
+        'imagePath': imagePath,
       });
     } catch (e) {
       if (kDebugMode) {
@@ -165,6 +171,7 @@ class FirebaseAuthService {
     String maritalStatus,
     double salary,
     String employment,
+    String imagePath,
   ) async {
     try {
       await _firestore.collection('users').doc(userId).set({
@@ -176,6 +183,7 @@ class FirebaseAuthService {
         'maritalStatus': maritalStatus,
         'salary': salary,
         'employment': employment,
+        'imagePath': imagePath,
       });
     } catch (e) {
       if (kDebugMode) {
