@@ -118,7 +118,14 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                   label: "Vendor Email",
                   obscure: false,
                   input: TextInputType.emailAddress,
-                  validate: (value) => _validateEmail(value),
+                  validate: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter an Email';
+                    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      return 'Enter a valid email address';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20.0),
                 TextFileds(
@@ -127,7 +134,14 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                   label: "Vendor Password",
                   obscure: true,
                   input: TextInputType.visiblePassword,
-                  validate: (value) => _validatePassword(value),
+                  validate: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    } else if (value.length < 8) {
+                      return 'Password must be at least 8 characters long';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 40.0),
                 Button(

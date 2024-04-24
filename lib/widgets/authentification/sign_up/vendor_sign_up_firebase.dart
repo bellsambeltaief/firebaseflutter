@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -93,7 +92,6 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           companyName,
           patentNumber,
           userType,
- 
         );
 
         if (user != null) {
@@ -114,6 +112,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
             'userName': userName,
             'numeroCin': numeroCin,
             'userType': userType,
+            'password': password,
           });
         } else {
           if (kDebugMode) {
@@ -127,8 +126,6 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
       }
     }
   }
-
- 
 
   @override
   void dispose() {
@@ -178,7 +175,6 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
                   const SizedBox(height: 20.0),
-                
 
                   /// TextField pour le numéro du patente
                   TextFileds(

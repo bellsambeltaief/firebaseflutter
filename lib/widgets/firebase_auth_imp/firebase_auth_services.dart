@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -13,9 +12,9 @@ class FirebaseAuthService {
     String password,
     String userName,
     String userType,
-    String age,
+    int age,
     String maritalStatus,
-    String salary,
+    double salary,
     String employment,
   ) async {
     try {
@@ -30,7 +29,7 @@ class FirebaseAuthService {
           user.uid,
           email,
           userName,
-          "User",
+          userType,
           age,
           maritalStatus,
           salary,
@@ -68,7 +67,7 @@ class FirebaseAuthService {
           userName,
           email,
           numeroCin,
-          "Vendor",
+          userType,
           companyName,
           patentNumber,
         );
@@ -162,9 +161,9 @@ class FirebaseAuthService {
     String email,
     String userName,
     String userType,
-    String age,
+    int age,
     String maritalStatus,
-    String salary,
+    double salary,
     String employment,
   ) async {
     try {

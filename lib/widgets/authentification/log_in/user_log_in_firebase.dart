@@ -6,9 +6,9 @@ import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
-import 'package:smart/widgets/client_home/client_home.dart';
-import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 import 'package:smart/widgets/authentification/sign_up/user_sign_up_firebase.dart';
+import 'package:smart/widgets/client_home/home.dart';
+import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 
 class UserLogFirebase extends StatefulWidget {
   const UserLogFirebase({
@@ -23,90 +23,73 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  String? emailError;
-  String? passwordError;
 
   /// Connection to firebase
 
   void _logIn() async {
-    setState(() {
-      emailError = null;
-      passwordError = null;
-    });
-    if (_formKey.currentState!.validate()) {
-      String email = emailController.text.trim();
-      String password = passwordController.text.trim();
+    String email = emailController.text;
+    String password = passwordController.text;
 
-      if ([
-        email,
-        password,
-      ].any((element) => element.isEmpty)) {
-        setState(() {
-          if (email.isEmpty) {
-            emailError = 'Please enter your Email';
-          }
-
-          if (password.isEmpty) {
-            passwordError = 'Please enter your password';
-          }
-        });
-        return;
+    // Check if all the fields aren't empty
+    if (email.isEmpty || password.isEmpty) {
+      // Display an error message or perform some other action
+      if (kDebugMode) {
+        print("All fields must be filled.");
       }
-      try {
-        User? user = await _auth.signInWithEmailAndPassword(email, password);
+      return;
+    }
 
-        if (user != null) {
-          // Retrieve the user document from Firestore
-          DocumentSnapshot userDocument =
-              await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-          if (kDebugMode) {
-            print("userID ${user.uid}");
-          }
-          // Retrieve the userType field from the document
-          Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
+    try {
+      User? user = await _auth.signInWithEmailAndPassword(email, password);
 
-          if (userData != null) {
-            String? userType = userData['userType'];
+      if (user != null) {
+        // Retrieve the user document from Firestore
+        DocumentSnapshot userDocument =
+            await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        // Retrieve the userType field from the document
+        Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
 
-            if (userType == 'vendor') {
-              if (kDebugMode) {
-                print("You are not a user");
-              }
-            } else if (userType == 'user') {
-              if (kDebugMode) {
-                print("Connection successfully");
-              }
-              // Navigate to the user-specific screen
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ClientHome(),
-                ),
-              );
-            } else {
-              // Handle unsupported user type
-              if (kDebugMode) {
-                print("Unsupported user type: $userType");
-              }
-            }
-          } else {
-            // Handle missing user data
+        if (userData != null) {
+          String? userType = userData['userType'];
+
+          if (userType == 'vendor') {
             if (kDebugMode) {
-              print("User data not found");
+              print("You are not a user");
+            }
+          } else if (userType == 'user') {
+            if (kDebugMode) {
+              print("Connection successfully");
+            }
+            // Navigate to the user-specific screen
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const ClientHome(),
+              ),
+            );
+          } else {
+            // Handle unsupported user type
+            if (kDebugMode) {
+              print("Unsupported user type: $userType");
             }
           }
         } else {
-          // Handle null user
+          // Handle missing user data
           if (kDebugMode) {
-            print("User is null");
+            print("User data not found");
           }
         }
-      } catch (e) {
-        // Handle login error
+      } else {
+        // Handle null user
         if (kDebugMode) {
-          print("Login error: $e");
+          print("User is null");
         }
       }
+    } catch (e) {
+      // Handle login error
+      if (kDebugMode) {
+        print("Login error: $e");
+      }
+      // Display an error message or perform some other action
     }
   }
 
@@ -143,7 +126,6 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                 const Header(text: 'Please login in order to proceed'),
                 const SizedBox(height: 50.0),
                 TextFileds(
-                  error: emailError,
                   controller: emailController,
                   label: "Email",
                   obscure: false,
@@ -152,7 +134,6 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                 ),
                 const SizedBox(height: 20.0),
                 TextFileds(
-                  error: passwordError,
                   controller: passwordController,
                   label: "Password",
                   obscure: true,
@@ -162,7 +143,7 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                 const SizedBox(height: 40.0),
                 Button(
                   label: "Log In",
-                  onTap: _logIn,
+                  onTap: _logIn, // Call login function here
                 ),
                 NoAccount(
                   text1: 'You don\'t have an account ? ',
