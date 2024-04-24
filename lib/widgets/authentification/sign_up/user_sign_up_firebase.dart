@@ -36,6 +36,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final _formKey = GlobalKey<FormState>();
   late File? _pickedImage;
 
+  /// Pick an image
   Future<void> _pickImage() async {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: false,
@@ -47,10 +48,13 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
         _pickedImage = File(result.files.single.path!);
       });
     } else {
-      print("No file selected");
+      if (kDebugMode) {
+        print("No file selected");
+      }
     }
   }
 
+  /// Upload images to firebase
   Future<void> _uploadImage() async {
     if (_pickedImage != null) {
       final fileName = _pickedImage!.path.split('/').last;
@@ -64,7 +68,9 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
             .ref('testing/$fileName')
             .getDownloadURL()
             .then((downloadURL) {
-          print("Download URL: $downloadURL");
+          if (kDebugMode) {
+            print("Download URL: $downloadURL");
+          }
         });
       });
 
@@ -73,7 +79,9 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
         print("Path: ${_pickedImage!.path}");
       }
     } else {
-      print("No image picked");
+      if (kDebugMode) {
+        print("No image picked");
+      }
     }
   }
 
@@ -176,7 +184,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
         if (kDebugMode) {
           print("Sign up error: $e");
         }
-        // Display an error message or perform some other action
       }
     }
   }

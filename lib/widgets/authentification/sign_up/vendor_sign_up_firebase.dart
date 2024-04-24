@@ -33,6 +33,56 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final passwordController = TextEditingController();
   final userTypeController = TextEditingController();
   final imagePathController = TextEditingController();
+  late File? _pickedImage;
+
+  /// Pick an Image
+  Future<void> _pickImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ['png', 'jpeg'],
+    );
+    if (result != null) {
+      setState(() {
+        _pickedImage = File(result.files.single.path!);
+      });
+    } else {
+      if (kDebugMode) {
+        print("No file selected");
+      }
+    }
+  }
+
+  /// Upload it to firestore
+  Future<void> _uploadImage() async {
+    if (_pickedImage != null) {
+      final fileName = _pickedImage!.path.split('/').last;
+
+      // Uploading the file to your storage library
+      final uploadTask = storage.UploadFile(_pickedImage!.path, fileName);
+
+      // Getting download URL after upload
+      uploadTask.then((value) {
+        firebase_storage.FirebaseStorage.instance
+            .ref('testing/$fileName')
+            .getDownloadURL()
+            .then((downloadURL) {
+          if (kDebugMode) {
+            print("Download URL: $downloadURL");
+          }
+        });
+      });
+
+      if (kDebugMode) {
+        print("File Name: $fileName");
+        print("Path: ${_pickedImage!.path}");
+      }
+    } else {
+      if (kDebugMode) {
+        print("No image picked");
+      }
+    }
+  }
 
   final _formKey = GlobalKey<FormState>();
   String? emailError;
@@ -113,6 +163,33 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
               builder: (_) => const VendorLogFirebase(),
             ),
           );
+          if (_pickedImage == null) {
+            if (kDebugMode) {
+              print("Please pick an image");
+            }
+            return;
+          }
+
+          // Upload the image to storage
+          final fileName = _pickedImage!.path.split('/').last;
+          final firebase_storage.Reference storageRef =
+              firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$fileName');
+          await storageRef.putFile(_pickedImage!);
+
+          // Get the download URL
+          final downloadURL = await storageRef.getDownloadURL();
+
+          // Now you can proceed with the sign-up process with the image downloadURL
+          final email = emailController.text;
+          final password = passwordController.text;
+
+          // Perform your sign-up logic here, passing the downloadURL along with other user details
+          if (kDebugMode) {
+            print("Signing up with email: $email, password: $password, imagePath: $downloadURL");
+          }
+          if (_pickedImage != null) {
+            await _uploadImage(); // Upload the picked image
+          }
           // Save vendor details to Firestore (excluding the password)
           await FirebaseFirestore.instance.collection('vendors').doc(user.uid).set({
             'email': email,
@@ -122,7 +199,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
             'numeroCin': numeroCin,
             'userType': userType,
             'password': password,
-            'imagePath': imagePath,
+            'imagePath': downloadURL,
           });
         } else {
           if (kDebugMode) {
@@ -186,48 +263,12 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   ),
                   const SizedBox(height: 20.0),
                   Center(
-                    child: ElevatedButton(
-                        child: const Text("Upload your patent picture"),
-                        onPressed: () async {
-                          final results = await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: ['png', 'jpeg'],
-                          );
-                          if (results == null) {
-                            const Text("No file selected");
-
-                            return;
-                          }
-                          final path = results.files.single.path;
-                          final fileName = results.files.single.name;
-
-                          /// Uploading the file to Firebase Storage
-                          storage.UploadFile(path!, fileName).then(
-                            (value) => print("DONE"),
-                          );
-
-                          ///Puting the file from Firebase Storage
-                          final firebase_storage.UploadTask uploadTask = firebase_storage
-                              .FirebaseStorage.instance
-                              .ref('testing/$fileName')
-                              .putFile(File(path));
-
-                          // Getting download URL after upload
-                          uploadTask.whenComplete(() async {
-                            final downloadURL = await firebase_storage.FirebaseStorage.instance
-                                .ref('testing/$fileName')
-                                .getDownloadURL();
-
-                            print("Download URL: $downloadURL");
-                          });
-                          if (kDebugMode) {
-                            print("  file : $fileName");
-                          }
-                          if (kDebugMode) {
-                            print(" path : $path");
-                          }
-                        }),
+                    child: Center(
+                      child: ElevatedButton(
+                        onPressed: _pickImage,
+                        child: const Text("Upload your Patent picture"),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20.0),
 
