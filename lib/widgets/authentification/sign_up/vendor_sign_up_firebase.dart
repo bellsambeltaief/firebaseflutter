@@ -1,10 +1,8 @@
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
@@ -29,8 +27,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final numeroCinController = TextEditingController();
   final passwordController = TextEditingController();
   final userTypeController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
-  XFile? _patentImage;
+
   final _formKey = GlobalKey<FormState>();
   String? emailError;
   String? patentNumberError;
@@ -96,13 +93,19 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           companyName,
           patentNumber,
           userType,
+ 
         );
 
         if (user != null) {
           if (kDebugMode) {
-            print("Vendor is successfully created");
+            print("Vendor is successfully created ");
           }
-
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const VendorLogFirebase(),
+            ),
+          );
           // Save vendor details to Firestore (excluding the password)
           await FirebaseFirestore.instance.collection('vendors').doc(user.uid).set({
             'email': email,
@@ -112,8 +115,6 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
             'numeroCin': numeroCin,
             'userType': userType,
           });
-
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VendorLogFirebase()));
         } else {
           if (kDebugMode) {
             print("Failed to create vendor account. Please check your input and try again.");
@@ -127,18 +128,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
     }
   }
 
-  Future<void> _pickPatentImage() async {
-    try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-      setState(() {
-        _patentImage = pickedFile;
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error picking patent image: $e");
-      }
-    }
-  }
+ 
 
   @override
   void dispose() {
@@ -188,13 +178,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
                   const SizedBox(height: 20.0),
-                  ElevatedButton(
-                    onPressed: _pickPatentImage,
-                    child: const Text('Upload Patent Image'),
-                  ),
-                  const SizedBox(height: 10.0),
-                  _patentImage != null ? Image.file(File(_patentImage!.path)) : Container(),
-                  const SizedBox(height: 20.0),
+                
 
                   /// TextField pour le numéro du patente
                   TextFileds(

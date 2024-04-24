@@ -1,11 +1,8 @@
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
@@ -23,8 +20,8 @@ class UserSignUpFirebase extends StatefulWidget {
 class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
-  final firstNameController = TextEditingController();
-  final lastNameController = TextEditingController();
+  final userNameController = TextEditingController();
+
   final passwordController = TextEditingController();
   final userTypeController = TextEditingController();
   final ageController = TextEditingController();
@@ -32,46 +29,22 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final salaryController = TextEditingController();
   final employmentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final ImagePicker _picker = ImagePicker();
-  XFile? _image;
+
   String? emailError;
-  String? firstNameError;
-  String? lastNameError;
+  String? userNameError;
+
   String? ageError;
   String? maritalStatusError;
   String? salaryError;
   String? employmentErorr;
   String? passwordError;
-  Future<void> _pickImage() async {
-    try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-      setState(() {
-        _image = pickedFile;
-      });
-    } catch (e) {
-      print("Error picking image: $e");
-    }
-  }
-
-  Future<String> uploadFile(XFile file) async {
-    try {
-      final ref =
-          FirebaseStorage.instance.ref().child('user_uploads/${DateTime.now().millisecondsSinceEpoch}');
-      await ref.putFile(File(file.path));
-      final downloadUrl = await ref.getDownloadURL();
-      return downloadUrl;
-    } catch (e) {
-      print('Error uploading file: $e');
-      return '';
-    }
-  }
 
   /// Connection to firebase
   void _signUp() async {
     setState(() {
       emailError = null;
-      firstNameError = null;
-      lastNameError = null;
+      userNameError = null;
+
       ageError = null;
       employmentErorr = null;
       salaryError = null;
@@ -81,8 +54,8 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
 
     if (_formKey.currentState!.validate()) {
       String email = emailController.text.trim();
-      String firstName = firstNameController.text.trim();
-      String lastName = lastNameController.text.trim();
+      String userName = userNameController.text.trim();
+
       String age = ageController.text.trim();
       String employment = employmentController.text.trim();
       String password = passwordController.text;
@@ -92,8 +65,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
 
       if ([
         email,
-        firstName,
-        lastName,
+        userName,
         employment,
         age,
         maritalStatus,
@@ -104,12 +76,10 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           if (email.isEmpty) {
             emailError = 'Please enter your Email';
           }
-          if (firstName.isEmpty) {
-            firstNameError = 'Please enter your First Name';
+          if (userName.isEmpty) {
+            userNameError = 'Please enter your First Name';
           }
-          if (lastName.isEmpty) {
-            lastNameError = 'Please enter your Last Name';
-          }
+
           if (employment.isEmpty) {
             employmentErorr = 'Please enter your Employment';
           }
@@ -134,41 +104,25 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           email,
           password,
           userType,
-          firstName,
-          lastName,
+          userName,
           age,
           maritalStatus,
           salary,
           employment,
         );
 
-        /// Upload file if selected
-        if (_image != null) {
-          String imageUrl = await uploadFile(_image!);
-          // Optionally save imageUrl to Firestore or use it as needed
-          if (imageUrl.isNotEmpty) {
-            // File uploaded successfully
-            if (kDebugMode) {
-              print("File uploaded. Image URL: $imageUrl");
-            }
-          } else {
-            // Error uploading file
-            if (kDebugMode) {
-              print("Error uploading file");
-            }
-          }
-        }
         if (user != null) {
           if (kDebugMode) {
             print("User is successfully created");
           }
 
+          // Upload picked file to Firebase Storage
+
           // Save user details to Firestore
           await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
             'userId': user.uid,
             'email': email,
-            'firstName': firstName,
-            'lastName': lastName,
+            'userName': userName,
             'userType': userType,
             'age': age,
             'maritalStatus': maritalStatus,
@@ -199,8 +153,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-    firstNameController.dispose();
-    lastNameController.dispose();
+    userNameController.dispose();
     userTypeController.dispose();
     ageController.dispose();
     maritalStatusController.dispose();
@@ -244,44 +197,19 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   const Header(
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
-                  const SizedBox(height: 20.0),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _pickImage,
-                      child: const Text('Add your CIN image'),
-                    ),
-                  ),
-                  const SizedBox(height: 20.0),
-                  _image != null ? Image.file(File(_image!.path)) : Container(),
-                  const SizedBox(height: 20.0),
-
-                  /// Text field pour le prénom
-                  TextFileds(
-                    error: firstNameError,
-                    controller: firstNameController,
-                    label: 'First Name',
-                    obscure: false,
-                    input: TextInputType.text,
-                    validate: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your first name';
-                      }
-                      return null;
-                    },
-                  ),
 
                   const SizedBox(height: 10.0),
 
                   /// Text field pour le nom
                   TextFileds(
-                    error: lastNameError,
-                    controller: lastNameController,
-                    label: 'Last Name',
+                    error: userNameError,
+                    controller: userNameController,
+                    label: 'User Name',
                     obscure: false,
                     input: TextInputType.text,
                     validate: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your last name';
+                      if (value!.isEmpty) {
+                        return 'Please enter your user name';
                       }
                       return null;
                     },

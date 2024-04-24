@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart/widgets/HomeForLogin/home.dart';
+import 'package:smart/widgets/client_home/client_home.dart';
 
 final Color aa = Colors.blue[800]!;
 
@@ -20,7 +20,7 @@ class CheckEligibility extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => const Home(),
+                builder: (_) => const ClientHome(),
               ),
             );
           },
