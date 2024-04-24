@@ -174,6 +174,19 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   const Header(
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
+                  TextFileds(
+                    controller: userTypeController,
+                    label: 'Vendor',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your user type';
+                      }
+                      return null;
+                    },
+                  ),
+
                   const SizedBox(height: 20.0),
 
                   /// TextField pour le numéro du patente

@@ -23,62 +23,76 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+
   String? emailError;
   String? passwordError;
 
   /// Connection to firebase
 
   void _logIn() async {
-    setState(() {
-      emailError = null;
-      passwordError = null;
-    });
-    if (_formKey.currentState!.validate()) {
-      String email = emailController.text;
-      String password = passwordController.text;
+    String email = emailController.text;
+    String password = passwordController.text;
 
-      if ([
-        email,
-        password,
-      ].any((element) => element.isEmpty)) {
-        setState(() {
-          if (email.isEmpty) {
-            emailError = 'Please enter your Email';
-          }
-
-          if (password.isEmpty) {
-            passwordError = 'Please enter your password';
-          }
-        });
-        return;
+    // Check if all the fields aren't empty
+    if (email.isEmpty || password.isEmpty) {
+      // Display an error message or perform some other action
+      if (kDebugMode) {
+        print("All fields must be filled.");
       }
-      User? user = await _auth.signInVendor(
-        email,
-        password,
-      );
+      return;
+    }
+
+    try {
+      User? user = await _auth.signInWithEmailAndPassword(email, password);
 
       if (user != null) {
-        // Retrieve the vendor document from Firestore
-        DocumentSnapshot vendorDocument =
+        // Retrieve the user document from Firestore
+        DocumentSnapshot userDocument =
             await FirebaseFirestore.instance.collection('vendors').doc(user.uid).get();
+        // Retrieve the userType field from the document
+        Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
 
-        if (vendorDocument.exists) {
-          if (kDebugMode) {
-            print("Vendor is successfully logged in");
+        if (userData != null) {
+          String? userType = userData['userType'];
+
+          if (userType == 'user') {
+            if (kDebugMode) {
+              print("You are not a user");
+            }
+          } else if (userType == 'vendor') {
+            if (kDebugMode) {
+              print("Connection successfully");
+            }
+            // Navigate to the user-specific screen
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const VendorHome(),
+              ),
+            );
+          } else {
+            // Handle unsupported user type
+            if (kDebugMode) {
+              print("Unsupported user type: $userType");
+            }
           }
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const VendorHome(),
-            ),
-          );
+        } else {
+          // Handle missing user data
+          if (kDebugMode) {
+            print("User data not found");
+          }
         }
       } else {
-        // Handle login error
+        // Handle null user
         if (kDebugMode) {
-          print("Some error happened");
+          print("User is null");
         }
       }
+    } catch (e) {
+      // Handle login error
+      if (kDebugMode) {
+        print("Login error: $e");
+      }
+      // Display an error message or perform some other action
     }
   }
 
