@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
+import 'package:smart/services/storage_service.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 import 'package:smart/widgets/authentification/log_in/vendor_log_in_firebase.dart';
 
@@ -17,6 +19,7 @@ class VendorSignUpFirebase extends StatefulWidget {
 }
 
 class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
+  final Storage storage = Storage();
   final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final patentImageController = TextEditingController();
@@ -174,6 +177,37 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                   const Header(
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
+                  const SizedBox(height: 20.0),
+                  Center(
+                    child: ElevatedButton(
+                        child: const Text("Upload your patent picture"),
+                        onPressed: () async {
+                          final results = await FilePicker.platform.pickFiles(
+                            allowMultiple: false,
+                            type: FileType.custom,
+                            allowedExtensions: ['png', 'jpeg'],
+                          );
+                          if (results == null) {
+                            const Text("No file selected");
+
+                            return;
+                          }
+                          final path = results.files.single.path;
+                          final fileName = results.files.single.name;
+
+                          storage.UploadFile(path!, fileName).then(
+                            (value) => print("DONE"),
+                          );
+                          if (kDebugMode) {
+                            print("  file : $fileName");
+                          }
+                          if (kDebugMode) {
+                            print(" path : $path");
+                          }
+                        }),
+                  ),
+                  const SizedBox(height: 20.0),
+
                   TextFileds(
                     controller: userTypeController,
                     label: 'Vendor',

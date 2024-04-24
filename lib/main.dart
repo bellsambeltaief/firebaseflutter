@@ -6,12 +6,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-        appId: '1:113432771088:android:8b900409827cc1e4016895',
-        apiKey: 'AIzaSyB8A7vaVFYjKuvED3bf86oxQzH_Nkl6e4M',
-        projectId: 'smart-1924e',
-        messagingSenderId: '113432771088',
-        storageBucket:
-            'https://console.firebase.google.com/project/smart-1924e/storage/smart-1924e.appspot.com/files'),
+      appId: '1:113432771088:android:8b900409827cc1e4016895',
+      apiKey: 'AIzaSyB8A7vaVFYjKuvED3bf86oxQzH_Nkl6e4M',
+      projectId: 'smart-1924e',
+      messagingSenderId: '113432771088',
+      storageBucket: 'gs://smart-1924e.appspot.com/',
+    ),
   );
   runApp(const MyApp());
 }

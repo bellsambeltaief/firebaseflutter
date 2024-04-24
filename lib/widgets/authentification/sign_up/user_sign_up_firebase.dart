@@ -1,11 +1,7 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
@@ -32,32 +28,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final employmentController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
-  final ImagePicker _picker = ImagePicker();
-  XFile? _image;
-
-  Future<void> _pickImage() async {
-    try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-      setState(() {
-        _image = pickedFile;
-      });
-    } catch (e) {
-      print("Error picking image: $e");
-    }
-  }
-
-  Future<String> uploadFile(XFile file) async {
-    try {
-      final ref =
-          FirebaseStorage.instance.ref().child('user_uploads/${DateTime.now().millisecondsSinceEpoch}');
-      await ref.putFile(File(file.path));
-      final downloadUrl = await ref.getDownloadURL();
-      return downloadUrl;
-    } catch (e) {
-      print('Error uploading file: $e');
-      return '';
-    }
-  }
 
   /// Connection to firebase
   void _signUp() async {
@@ -139,7 +109,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-
     userNameController.dispose();
     userTypeController.dispose();
     ageController.dispose();
@@ -184,12 +153,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   const Header(
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
-                  ElevatedButton(
-                    onPressed: _pickImage,
-                    child: const Text('Add you CIN image'),
-                  ),
-                  const SizedBox(height: 20.0),
-                  _image != null ? Image.file(File(_image!.path)) : Container(),
+
                   const SizedBox(height: 20.0),
                   TextFormField(
                     controller: userTypeController,
