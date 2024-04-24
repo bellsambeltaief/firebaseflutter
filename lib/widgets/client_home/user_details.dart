@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:smart/widgets/HomeForLogin/user_info_card.dart';
+import 'package:smart/widgets/client_home/user_info_card.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart'; // Import your FirebaseAuthService
 
 class UserDetails extends StatefulWidget {

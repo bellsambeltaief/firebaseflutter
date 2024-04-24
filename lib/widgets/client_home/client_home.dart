@@ -2,20 +2,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart/common/button.dart';
-import 'package:smart/widgets/HomeForLogin/balance_card.dart';
-import 'package:smart/widgets/HomeForLogin/purchase_button.dart';
-import 'package:smart/widgets/HomeForLogin/user_details.dart';
 import 'package:smart/widgets/authentification/log_in/user_log_in_firebase.dart';
+import 'package:smart/widgets/client_home/balance_card.dart';
+import 'package:smart/widgets/client_home/purchase_button.dart';
+import 'package:smart/widgets/client_home/user_details.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+class ClientHome extends StatefulWidget {
+  const ClientHome({Key? key}) : super(key: key);
 
   @override
-  State<Home> createState() => _HomeState();
+  State<ClientHome> createState() => _ClientHomeState();
 }
 
-class _HomeState extends State<Home> {
+class _ClientHomeState extends State<ClientHome> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   String firstName = '';
   String lastName = '';

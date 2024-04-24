@@ -6,8 +6,8 @@ import 'package:smart/common/button.dart';
 import 'package:smart/common/header.dart';
 import 'package:smart/common/no_account.dart';
 import 'package:smart/common/text_field.dart';
+import 'package:smart/widgets/client_home/client_home.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
-import 'package:smart/widgets/HomeForLogin/Home.dart';
 import 'package:smart/widgets/authentification/sign_up/vendor_sign_up_firebase.dart';
 
 class VendorLogFirebase extends StatefulWidget {
@@ -69,7 +69,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
           }
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => const Home(),
+              builder: (_) => const ClientHome(),
             ),
           );
         }
@@ -132,7 +132,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                 const SizedBox(height: 40.0),
                 Button(
                   label: "Log In as a Vendor",
-                  onTap: _logIn, 
+                  onTap: _logIn,
                 ),
                 NoAccount(
                   text1: 'You don\'t have an account ? ',

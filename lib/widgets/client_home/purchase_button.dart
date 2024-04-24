@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart/widgets/HomeForLogin/check_eligibility.dart';
+import 'package:smart/widgets/client_home/check_eligibility.dart';
 
 class PurchaseButton extends StatelessWidget {
   const PurchaseButton({super.key});

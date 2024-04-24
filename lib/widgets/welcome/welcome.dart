@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:smart/widgets/signchoices/sign_choices.dart';
+import 'package:smart/widgets/sign_choices/sign_choices.dart';
 
 class Welcome extends StatefulWidget {
   const Welcome({super.key});
