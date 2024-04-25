@@ -3,7 +3,6 @@ import 'package:smart/common/button.dart';
 import 'package:smart/widgets/authentification/log_in/user_log_in_firebase.dart';
 import 'package:smart/widgets/authentification/log_in/vendor_log_in_firebase.dart';
 
-
 class SignChoices extends StatelessWidget {
   const SignChoices({super.key});
 

@@ -327,4 +327,22 @@ class FirebaseAuthService {
       return "Error: An unexpected error occurred.";
     }
   }
+
+  Future<bool> checkVendorEmailExists(String email) async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('vendors')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      // Handle any potential errors here
+      if (kDebugMode) {
+        print('Error checking vendor EMAIL: $e');
+      }
+      return false;
+    }
+  }
 }

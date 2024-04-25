@@ -44,7 +44,7 @@ class _VendorHomeState extends State<VendorHome> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     const Text(
-                      'You can find all the client folders here',
+                      'You can find all the client cheques here',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,

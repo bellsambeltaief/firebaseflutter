@@ -9,6 +9,7 @@ import 'package:smart/common/text_field.dart';
 import 'package:smart/vendor_home/vendor_home.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 import 'package:smart/widgets/authentification/sign_up/vendor_sign_up_firebase.dart';
+import 'package:smart/widgets/sign_choices/sign_choices.dart';
 
 class VendorLogFirebase extends StatefulWidget {
   const VendorLogFirebase({
@@ -25,7 +26,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
   final passwordController = TextEditingController();
   String? emailError;
   String? passwordError;
-
+  final _formKey = GlobalKey<FormState>();
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -39,7 +40,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
     String password = passwordController.text;
 
     // Check if all the fields aren't empty
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty || !_formKey.currentState!.validate()) {
       // Display an error message or perform some other action
       if (kDebugMode) {
         print("All fields must be filled.");
@@ -112,7 +113,11 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
               Icons.arrow_back,
             ),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SignChoices(),
+                ),
+              );
             },
           ),
           title: const Row(
@@ -125,82 +130,67 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(40.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                const Header(text: 'Please login in order to proceed'),
-                const SizedBox(height: 50.0),
-                TextFileds(
-                  error: emailError,
-                  controller: emailController,
-                  label: "Vendor Email",
-                  obscure: false,
-                  input: TextInputType.emailAddress,
-                  validate: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an Email';
-                    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Enter a valid email address';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20.0),
-                TextFileds(
-                  error: passwordError,
-                  controller: passwordController,
-                  label: "Vendor Password",
-                  obscure: true,
-                  input: TextInputType.visiblePassword,
-                  validate: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    } else if (value.length < 8) {
-                      return 'Password must be at least 8 characters long';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 40.0),
-                Button(
-                  label: "Log In as a Vendor",
-                  onTap: _logIn,
-                ),
-                NoAccount(
-                  text1: 'You don\'t have an account ? ',
-                  text2: "SignUp as a Vendor",
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const VendorSignUpFirebase(),
-                      ),
-                    );
-                  },
-                ),
-              ],
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const Header(text: 'Please login in order to proceed'),
+                  const SizedBox(height: 50.0),
+                  TextFileds(
+                    error: emailError,
+                    controller: emailController,
+                    label: "Vendor Email",
+                    obscure: false,
+                    input: TextInputType.emailAddress,
+                    validate: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an Email';
+                      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20.0),
+                  TextFileds(
+                    error: passwordError,
+                    controller: passwordController,
+                    label: "Vendor Password",
+                    obscure: true,
+                    input: TextInputType.visiblePassword,
+                    validate: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      } else if (value.length < 8) {
+                        return 'Password must be at least 8 characters long';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 40.0),
+                  Button(
+                    label: "Log In as a Vendor",
+                    onTap: _logIn,
+                  ),
+                  NoAccount(
+                    text1: 'You don\'t have an account ? ',
+                    text2: "SignUp as a Vendor",
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const VendorSignUpFirebase(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  String? _validateEmail(String? value) {
-    if (value!.isEmpty) {
-      return 'Please enter your email';
-    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-      return 'Enter a valid email address';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    if (value!.isEmpty) {
-      return 'Please enter your password';
-    } else if (value.length < 8) {
-      return 'Password must be at least 8 characters long';
-    }
-    return null;
   }
 }

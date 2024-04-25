@@ -33,8 +33,9 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final passwordController = TextEditingController();
   final userTypeController = TextEditingController();
   final imagePathController = TextEditingController();
-  late File? _pickedImage;
+  File? _pickedImage;
   bool _isLoading = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -100,9 +101,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
 
   /// Fonction signup du vendeur
   void _signUpVendor() async {
-    setState(() {
-      _isLoading = true;
-    });
+ 
 
     setState(() {
       emailError = null;
@@ -290,8 +289,12 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20.0),
 
+                      const SizedBox(height: 20),
+                      _pickedImage != null
+                          ? Image.file(_pickedImage!) // Display the picked image if available
+                          : Container(), // Empty container if no image is picked
+                      const SizedBox(height: 20.0),
                       TextFileds(
                         controller: userTypeController,
                         label: 'Vendor',

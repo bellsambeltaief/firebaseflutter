@@ -34,7 +34,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final imagePathController = TextEditingController();
   final Storage storage = Storage();
   final _formKey = GlobalKey<FormState>();
-  late File? _pickedImage;
+   File? _pickedImage;
   bool _isLoading = false;
   @override
   void didChangeDependencies() {
@@ -93,9 +93,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
 
   /// Connection to firebase
   void _signUp() async {
-    setState(() {
-      _isLoading = true;
-    });
+  
 
     if (_formKey.currentState!.validate()) {
       String userName = userNameController.text;
@@ -260,6 +258,10 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                           child: const Text("Upload your CIN picture"),
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      _pickedImage != null
+                          ? Image.file(_pickedImage!) // Display the picked image if available
+                          : Container(), // Empty container if no image is picked
                       const SizedBox(height: 20.0),
                       TextFormField(
                         controller: userTypeController,

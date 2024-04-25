@@ -50,11 +50,6 @@ class _ClientHomeState extends State<ClientHome> {
     return SafeArea(
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
         body: Stack(
           children: [
             Container(
