@@ -23,9 +23,14 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
   String? emailError;
   String? passwordError;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _logIn();
+  }
 
   /// Connection to firebase
 

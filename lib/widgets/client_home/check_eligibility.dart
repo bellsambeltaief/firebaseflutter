@@ -152,6 +152,14 @@ class _CheckEligibilityState extends State<CheckEligibility> {
         if (kDebugMode) {
           print("Eligibility Status: $eligibilityStatus");
         }
+
+        // Afficher le statut d'éligibilité dans un SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(eligibilityStatus),
+            duration: const Duration(seconds: 3), // Durée d'affichage du SnackBar
+          ),
+        );
       } else {
         if (kDebugMode) {
           print("Error: User data not found.");

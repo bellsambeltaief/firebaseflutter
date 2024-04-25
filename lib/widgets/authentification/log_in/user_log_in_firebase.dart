@@ -23,6 +23,12 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _logIn();
+  }
 
   /// Connection to firebase
 
