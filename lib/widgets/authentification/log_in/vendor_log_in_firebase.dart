@@ -40,11 +40,8 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
     String password = passwordController.text;
 
     // Check if all the fields aren't empty
+    // Check if all the fields aren't empty
     if (email.isEmpty || password.isEmpty || !_formKey.currentState!.validate()) {
-      // Display an error message or perform some other action
-      if (kDebugMode) {
-        print("All fields must be filled.");
-      }
       return;
     }
 

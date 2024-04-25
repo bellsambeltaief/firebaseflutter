@@ -23,9 +23,9 @@ class SignChoices extends StatelessWidget {
               const SizedBox(height: 20),
               Center(
                 child: Image.asset(
-                  'assets/a.png', // Replace with the path to your logo file
-                  width: 300, // Set this to the appropriate width for your logo
-                  height: 120, // Set this to the appropriate height for your logo
+                  'assets/a.png',
+                  width: 300,
+                  height: 120,
                   color: Colors.blue[900],
                 ),
               ),

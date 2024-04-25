@@ -40,13 +40,8 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
 
     // Check if all the fields aren't empty
     if (email.isEmpty || password.isEmpty || !_formKey.currentState!.validate()) {
-      // Display an error message or perform some other action
-      if (kDebugMode) {
-        print("All fields must be filled.");
-      }
       return;
     }
-
     try {
       User? user = await _auth.signInWithEmailAndPassword(email, password);
 
