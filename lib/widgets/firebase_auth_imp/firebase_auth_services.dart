@@ -227,7 +227,18 @@ class FirebaseAuthService {
     }
   }
 
-  // Method to fetch full user profile from Firestore
+  String getCurrentUserId() {
+    // Récupérez l'ID de l'utilisateur connecté à partir de FirebaseAuth
+    User? user = _auth.currentUser;
+    if (user != null) {
+      return user.uid;
+    } else {
+      // Si aucun utilisateur n'est connecté, vous pouvez renvoyer null ou lever une erreur selon vos besoins
+      throw Exception("No user currently signed in.");
+    }
+  }
+
+  /// Method to fetch full user profile from Firestore
   Future<Map<String, dynamic>?> fetchUserProfile(String userId) async {
     try {
       DocumentSnapshot snapshot = await _firestore.collection('users').doc(userId).get();
@@ -241,7 +252,9 @@ class FirebaseAuthService {
       }
       return null;
     }
-  } // Method to fetch full vendor profile from Firestore
+  }
+
+  /// Method to fetch full vendor profile from Firestore
 
   Future<Map<String, dynamic>?> fetchVendorProfile(String userId) async {
     try {
@@ -255,6 +268,63 @@ class FirebaseAuthService {
         print("Error retrieving vendor profile: $e");
       }
       return null;
+    }
+  }
+
+  // Function to check eligibility based on salary
+  Future<String> checkEligibility(double salary, double itemPrice) async {
+    try {
+      String userId = _auth.currentUser?.uid ?? ""; // Get current user ID
+
+      // Get user data from Firestore
+      Map<String, dynamic>? userData = await fetchUserProfile(userId);
+
+      // Check if user data is available
+      if (userData != null) {
+        String maritalStatus = userData['maritalStatus'];
+        String jobClass = userData['employment'];
+
+        // Check eligibility based on salary
+        if (salary >= 3 * itemPrice) {
+          return "Eligible";
+        } else {
+          // Calculate initial score
+          int score = 0;
+
+          // Check salary condition
+          if (salary < 3 * itemPrice) {
+            if (maritalStatus == "married") {
+              score += 50;
+            }
+            // You need to define educational_level in your user data
+            // and pass it here
+            // if (educational_level == "higher") {
+            //   score += 50;
+            // }
+            if (jobClass == "A") {
+              score += 100;
+            } else if (jobClass == "B") {
+              score += 70;
+            } else if (jobClass == "C") {
+              score += 30;
+            }
+          }
+
+          // Check overall score for eligibility
+          if (score > 200) {
+            return "Eligible";
+          } else {
+            return "Not Eligible";
+          }
+        }
+      } else {
+        return "Error: User data not found.";
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error checking eligibility: $e");
+      }
+      return "Error: An unexpected error occurred.";
     }
   }
 }

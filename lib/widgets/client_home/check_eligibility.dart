@@ -1,10 +1,20 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart/widgets/client_home/client_home.dart';
+import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart'; // Importez le service Firebase
 
 final Color aa = Colors.blue[800]!;
 
-class CheckEligibility extends StatelessWidget {
-  const CheckEligibility({super.key});
+class CheckEligibility extends StatefulWidget {
+  const CheckEligibility({Key? key});
+
+  @override
+  State<CheckEligibility> createState() => _CheckEligibilityState();
+}
+
+class _CheckEligibilityState extends State<CheckEligibility> {
+  final TextEditingController _itemPriceController = TextEditingController();
+  double _itemPrice = 0.0; // Variable pour stocker le prix de l'article
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +75,7 @@ class CheckEligibility extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   TextField(
+                    controller: _itemPriceController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -75,13 +86,19 @@ class CheckEligibility extends StatelessWidget {
                       fillColor: Colors.white,
                       hintText: 'Enter price',
                     ),
+                    onChanged: (value) {
+                      setState(() {
+                        _itemPrice = double.tryParse(value) ?? 0.0;
+                      });
+                    },
                   ),
                   const SizedBox(height: 20),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed:
+                          _checkEligibilityButtonPressed, // Appeler la fonction lors du clic sur le bouton
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.blue[800],
                         backgroundColor: Colors.white,
@@ -113,5 +130,37 @@ class CheckEligibility extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Fonction pour gérer le clic sur le bouton
+  void _checkEligibilityButtonPressed() async {
+    try {
+      // Récupérer l'ID de l'utilisateur connecté
+      String userId = FirebaseAuthService().getCurrentUserId();
+
+      // Récupérer les données de l'utilisateur depuis Firestore
+      Map<String, dynamic>? userData = await FirebaseAuthService().fetchUserProfile(userId);
+
+      if (userData != null) {
+        // Récupérer le salaire de l'utilisateur depuis les données récupérées
+        double salary = userData['salary'];
+
+        // Appeler la fonction pour vérifier l'éligibilité
+        String eligibilityStatus = await FirebaseAuthService().checkEligibility(salary, _itemPrice);
+
+        // Afficher ou traiter le statut d'éligibilité
+        if (kDebugMode) {
+          print("Eligibility Status: $eligibilityStatus");
+        }
+      } else {
+        if (kDebugMode) {
+          print("Error: User data not found.");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error checking eligibility: $e");
+      }
+    }
   }
 }
