@@ -34,7 +34,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final imagePathController = TextEditingController();
   final Storage storage = Storage();
   final _formKey = GlobalKey<FormState>();
-  late File? _pickedImage;
+ File? _pickedImage;
 
   @override
   void didChangeDependencies() {
@@ -63,9 +63,9 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   /// Upload images to firebase
   Future<void> _uploadImage() async {
     if (_pickedImage != null) {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final userEmail = FirebaseAuth.instance.currentUser?.email;
       final fileName = _pickedImage!.path.split('/').last;
-      final storageRef = firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userId/$fileName');
+      final storageRef = firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userEmail/$fileName');
 
       try {
         await storageRef.putFile(_pickedImage!);
@@ -137,10 +137,10 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           }
 
           // Upload the image to storage
-          final userId = FirebaseAuth.instance.currentUser?.uid;
+          final userEmail = FirebaseAuth.instance.currentUser?.email;
           final fileName = _pickedImage!.path.split('/').last;
           final firebase_storage.Reference storageRef =
-              firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userId/$fileName');
+              firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userEmail/$fileName');
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
@@ -243,6 +243,14 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                       child: const Text("Upload your CIN picture"),
                     ),
                   ),
+                  if (_pickedImage != null)
+                    Image.file(
+                      _pickedImage!,
+                      width: 200,
+                      height: 200,
+                    )
+                  else
+                    Container(),
                   const SizedBox(height: 20.0),
                   TextFormField(
                     controller: userTypeController,

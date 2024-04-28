@@ -61,9 +61,9 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   /// Upload images to firebase
   Future<void> _uploadImage() async {
     if (_pickedImage != null) {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
+      final userEmail = FirebaseAuth.instance.currentUser?.displayName;
       final fileName = _pickedImage!.path.split('/').last;
-      final storageRef = firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userId/$fileName');
+      final storageRef = firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userEmail/$fileName');
 
       try {
         await storageRef.putFile(_pickedImage!);
@@ -172,10 +172,10 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           }
 
           // Upload the image to storage
-          final userId = FirebaseAuth.instance.currentUser?.uid;
+          final userEmail = FirebaseAuth.instance.currentUser?.email;
           final fileName = _pickedImage!.path.split('/').last;
           final firebase_storage.Reference storageRef =
-              firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userId/$fileName');
+              firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userEmail/$fileName');
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
@@ -271,7 +271,14 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                       ),
                     ),
                   ),
-
+                  if (_pickedImage != null)
+                    Image.file(
+                      _pickedImage!,
+                      width: 200,
+                      height: 200,
+                    )
+                  else
+                    Container(),
                   const SizedBox(height: 20.0),
                   TextFileds(
                     controller: userTypeController,
