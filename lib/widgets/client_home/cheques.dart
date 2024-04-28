@@ -26,7 +26,6 @@ class _ChequesState extends State<Cheques> {
   /// List of images
   final List<File> _pickedImages = [];
 
-  /// Function to upload
   Future<void> _uploadCheques(String duration, List<File> files, String vendorEmail) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -55,14 +54,19 @@ class _ChequesState extends State<Cheques> {
         final userFilePath = '$userFolderPath/$fileName';
         await file.copy(userFilePath);
 
-        // Upload the file to Firebase Storage
-        final storageRef =
-            firebase_storage.FirebaseStorage.instance.ref('vendors/$vendorEmail/cheques/$duration/$fileName');
-        await storageRef.putFile(file);
+        // Upload the file to Firebase Storage for the user
+        final userStorageRef =
+            firebase_storage.FirebaseStorage.instance.ref('users/$userEmail/cheques/$duration/$fileName');
+        await userStorageRef.putFile(file);
 
         // Copy the file to the vendor's folder
         final vendorFilePath = '$vendorFolderPath/$fileName';
         await file.copy(vendorFilePath);
+
+        // Upload the file to Firebase Storage for the vendor
+        final vendorStorageRef =
+            firebase_storage.FirebaseStorage.instance.ref('vendors/$vendorEmail/cheques/$duration/$fileName');
+        await vendorStorageRef.putFile(file);
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
