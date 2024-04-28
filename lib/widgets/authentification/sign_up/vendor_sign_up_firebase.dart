@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -34,7 +33,6 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final userTypeController = TextEditingController();
   final imagePathController = TextEditingController();
   File? _pickedImage;
-  bool _isLoading = false;
 
   @override
   void didChangeDependencies() {
@@ -60,29 +58,23 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
     }
   }
 
-  /// Upload it to firestore
+  /// Upload images to firebase
   Future<void> _uploadImage() async {
     if (_pickedImage != null) {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
       final fileName = _pickedImage!.path.split('/').last;
+      final storageRef = firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userId/$fileName');
 
-      // Uploading the file to your storage library
-      final uploadTask = storage.UploadFile(_pickedImage!.path, fileName);
-
-      // Getting download URL after upload
-      uploadTask.then((value) {
-        firebase_storage.FirebaseStorage.instance
-            .ref('testing/$fileName')
-            .getDownloadURL()
-            .then((downloadURL) {
-          if (kDebugMode) {
-            print("Download URL: $downloadURL");
-          }
-        });
-      });
-
-      if (kDebugMode) {
-        print("File Name: $fileName");
-        print("Path: ${_pickedImage!.path}");
+      try {
+        await storageRef.putFile(_pickedImage!);
+        final downloadURL = await storageRef.getDownloadURL();
+        if (kDebugMode) {
+          print("Download URL: $downloadURL");
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print("Failed to upload image: $e");
+        }
       }
     } else {
       if (kDebugMode) {
@@ -101,8 +93,6 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
 
   /// Fonction signup du vendeur
   void _signUpVendor() async {
- 
-
     setState(() {
       emailError = null;
       patentNumberError = null;
@@ -182,14 +172,14 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           }
 
           // Upload the image to storage
+          final userId = FirebaseAuth.instance.currentUser?.uid;
           final fileName = _pickedImage!.path.split('/').last;
           final firebase_storage.Reference storageRef =
-              firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$fileName');
+              firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userId/$fileName');
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
           final downloadURL = await storageRef.getDownloadURL();
-
           // Now you can proceed with the sign-up process with the image downloadURL
           final email = emailController.text;
           final password = passwordController.text;
@@ -217,13 +207,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
             print("Failed to create vendor account. Please check your input and try again.");
           }
         }
-        setState(() {
-          _isLoading = false; // Marquer la fin du chargement
-        });
       } catch (e) {
-        setState(() {
-          _isLoading = false; // Marquer la fin du chargement en cas d'erreur
-        });
         if (kDebugMode) {
           print("Sign up error: $e");
         }
@@ -266,187 +250,168 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
             ],
           ),
         ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      const Header(
-                        text: 'Please create your account in order to be able to benefit from our service!',
-                      ),
-                      const SizedBox(height: 20.0),
-                      Center(
-                        child: Center(
-                          child: ElevatedButton(
-                            onPressed: _pickImage,
-                            child: const Text("Upload your Patent picture"),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      _pickedImage != null
-                          ? Image.file(_pickedImage!) // Display the picked image if available
-                          : Container(), // Empty container if no image is picked
-                      const SizedBox(height: 20.0),
-                      TextFileds(
-                        controller: userTypeController,
-                        label: 'Vendor',
-                        obscure: false,
-                        input: TextInputType.text,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your user type';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 20.0),
-
-                      /// TextField pour le numéro du patente
-                      TextFileds(
-                        error: patentNumberError,
-                        controller: patentNumberController,
-                        label: 'Patent Number',
-                        obscure: false,
-                        input: TextInputType.number,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your Patent Number';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 10.0),
-
-                      /// Text Field pour le nom du company
-                      TextFileds(
-                        error: companyNameError,
-                        controller: companyNameController,
-                        label: 'Company Name',
-                        obscure: false,
-                        input: TextInputType.text,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your Company Name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10.0),
-
-                      /// TextField pour le numéro du CIN
-                      TextFileds(
-                        error: numeroCinError,
-                        controller: numeroCinController,
-                        label: 'CIN Number',
-                        obscure: false,
-                        input: TextInputType.number,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your CIN Number';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 10.0),
-
-                      /// Text field pour le nom d'utilisateur
-                      TextFileds(
-                        error: userNameError,
-                        controller: userNameController,
-                        label: 'User Name',
-                        obscure: false,
-                        input: TextInputType.text,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your User Name';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 10.0),
-
-                      /// Text field pour l'adresse Email
-                      TextFileds(
-                        error: emailError,
-                        controller: emailController,
-                        label: 'Email',
-                        obscure: false,
-                        input: TextInputType.emailAddress,
-                        validate: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter an Email';
-                          } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                            return 'Enter a valid email address';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 10.0),
-
-                      /// TextField pour le mot de passe
-                      TextFileds(
-                        error: passwordError,
-                        controller: passwordController,
-                        label: 'Password',
-                        obscure: true,
-                        input: TextInputType.visiblePassword,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter your password';
-                          } else if (value.length < 8) {
-                            return 'Password must be at least 8 characters long';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 20.0),
-                      Button(
-                        label: "Sign Up as a Vendor",
-                        onTap: _signUpVendor,
-                      ),
-                      const SizedBox(height: 10.0),
-                      NoAccount(
-                        text1: 'You  have an account ? ',
-                        text2: "LogIn as a Vendor",
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const VendorLogFirebase(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const Header(
+                    text: 'Please create your account in order to be able to benefit from our service!',
                   ),
-                ),
+                  const SizedBox(height: 20.0),
+                  Center(
+                    child: Center(
+                      child: ElevatedButton(
+                        onPressed: _pickImage,
+                        child: const Text("Upload your Patent picture"),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20.0),
+                  TextFileds(
+                    controller: userTypeController,
+                    label: 'Vendor',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your user type';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 20.0),
+
+                  /// TextField pour le numéro du patente
+                  TextFileds(
+                    error: patentNumberError,
+                    controller: patentNumberController,
+                    label: 'Patent Number',
+                    obscure: false,
+                    input: TextInputType.number,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your Patent Number';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 10.0),
+
+                  /// Text Field pour le nom du company
+                  TextFileds(
+                    error: companyNameError,
+                    controller: companyNameController,
+                    label: 'Company Name',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your Company Name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10.0),
+
+                  /// TextField pour le numéro du CIN
+                  TextFileds(
+                    error: numeroCinError,
+                    controller: numeroCinController,
+                    label: 'CIN Number',
+                    obscure: false,
+                    input: TextInputType.number,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your CIN Number';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 10.0),
+
+                  /// Text field pour le nom d'utilisateur
+                  TextFileds(
+                    error: userNameError,
+                    controller: userNameController,
+                    label: 'User Name',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your User Name';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 10.0),
+
+                  /// Text field pour l'adresse Email
+                  TextFileds(
+                    error: emailError,
+                    controller: emailController,
+                    label: 'Email',
+                    obscure: false,
+                    input: TextInputType.emailAddress,
+                    validate: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an Email';
+                      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 10.0),
+
+                  /// TextField pour le mot de passe
+                  TextFileds(
+                    error: passwordError,
+                    controller: passwordController,
+                    label: 'Password',
+                    obscure: true,
+                    input: TextInputType.visiblePassword,
+                    validate: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your password';
+                      } else if (value.length < 8) {
+                        return 'Password must be at least 8 characters long';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 20.0),
+                  Button(
+                    label: "Sign Up as a Vendor",
+                    onTap: _signUpVendor,
+                  ),
+                  const SizedBox(height: 10.0),
+                  NoAccount(
+                    text1: 'You  have an account ? ',
+                    text2: "LogIn as a Vendor",
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const VendorLogFirebase(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            Visibility(
-              // Afficher le cercle de chargement seulement lorsque _isLoading est vrai
-              visible: _isLoading,
-              child: Container(
-                color: Colors.black.withOpacity(0.5), // Fond semi-transparent
-                child: const Center(
-                  // Centrer le cercle de chargement
-                  child: CircularProgressIndicator(), // Cercle de chargement
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

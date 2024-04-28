@@ -19,6 +19,7 @@ class _ClientHomeState extends State<ClientHome> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   String firstName = '';
   String lastName = '';
+  String imagePath = ''; // Add this for image path
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class _ClientHomeState extends State<ClientHome> {
         setState(() {
           firstName = userDetails['firstName'] ?? '';
           lastName = userDetails['lastName'] ?? '';
+          imagePath = userDetails['imagePath'] ?? '';
         });
       }
     }
@@ -76,6 +78,46 @@ class _ClientHomeState extends State<ClientHome> {
                       ),
                     ),
                     const SizedBox(height: 40),
+                    imagePath.isNotEmpty
+                        ? Image.network(
+                            imagePath,
+                            height: 200,
+                            errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                              // Customize the error widget when the image fails to load
+                              return Container(
+                                height: 200,
+                                color: Colors.grey[300],
+                                child: Center(
+                                  child: Text(
+                                    'Failed to load image',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              );
+                            },
+                            loadingBuilder:
+                                (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            height: 200,
+                            color: Colors.grey[200],
+                            child: Center(
+                              child: Text(
+                                'No image path provided',
+                                style: TextStyle(color: Colors.black54),
+                              ),
+                            ),
+                          ),
                     const BalanceCard(),
                     const SizedBox(height: 20),
                     UserDetails(

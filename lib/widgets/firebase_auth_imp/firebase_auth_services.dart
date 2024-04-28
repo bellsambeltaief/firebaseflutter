@@ -212,6 +212,37 @@ class FirebaseAuthService {
     }
   }
 
+// Get image path from Firestore
+  Future<String?> getUserImagePath(String userId) async {
+    try {
+      // Attempt to fetch from 'vendors' collection first
+      DocumentSnapshot vendorSnapshot = await _firestore.collection('vendors').doc(userId).get();
+      if (vendorSnapshot.exists && vendorSnapshot.data() != null) {
+        var vendorData = vendorSnapshot.data() as Map<String, dynamic>;
+        return vendorData['imagePath'] as String?;
+      }
+
+      // If not found in 'vendors', check in 'users' collection
+      DocumentSnapshot userSnapshot = await _firestore.collection('users').doc(userId).get();
+      if (userSnapshot.exists && userSnapshot.data() != null) {
+        var userData = userSnapshot.data() as Map<String, dynamic>;
+        return userData['imagePath'] as String?;
+      }
+
+      // If no document is found
+      if (kDebugMode) {
+        print("No document found for the user or vendor with ID $userId");
+      }
+      return null;
+    } catch (e) {
+      // Handle any other errors
+      if (kDebugMode) {
+        print("Error retrieving image path: $e");
+      }
+      return null;
+    }
+  }
+
   // Method to log out the user
   Future<void> logOut() async {
     try {

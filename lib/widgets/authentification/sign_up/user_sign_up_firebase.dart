@@ -34,7 +34,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final imagePathController = TextEditingController();
   final Storage storage = Storage();
   final _formKey = GlobalKey<FormState>();
-   File? _pickedImage;
+  late File? _pickedImage;
   bool _isLoading = false;
   @override
   void didChangeDependencies() {
@@ -63,26 +63,20 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   /// Upload images to firebase
   Future<void> _uploadImage() async {
     if (_pickedImage != null) {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
       final fileName = _pickedImage!.path.split('/').last;
+      final storageRef = firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userId/$fileName');
 
-      // Uploading the file to your storage library
-      final uploadTask = storage.UploadFile(_pickedImage!.path, fileName);
-
-      // Getting download URL after upload
-      uploadTask.then((value) {
-        firebase_storage.FirebaseStorage.instance
-            .ref('testing/$fileName')
-            .getDownloadURL()
-            .then((downloadURL) {
-          if (kDebugMode) {
-            print("Download URL: $downloadURL");
-          }
-        });
-      });
-
-      if (kDebugMode) {
-        print("File Name: $fileName");
-        print("Path: ${_pickedImage!.path}");
+      try {
+        await storageRef.putFile(_pickedImage!);
+        final downloadURL = await storageRef.getDownloadURL();
+        if (kDebugMode) {
+          print("Download URL: $downloadURL");
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print("Failed to upload image: $e");
+        }
       }
     } else {
       if (kDebugMode) {
@@ -93,8 +87,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
 
   /// Connection to firebase
   void _signUp() async {
-  
-
     if (_formKey.currentState!.validate()) {
       String userName = userNameController.text;
       String email = emailController.text;
@@ -145,9 +137,10 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           }
 
           // Upload the image to storage
+          final userId = FirebaseAuth.instance.currentUser?.uid;
           final fileName = _pickedImage!.path.split('/').last;
           final firebase_storage.Reference storageRef =
-              firebase_storage.FirebaseStorage.instance.ref('UsersImages/$fileName');
+              firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userId/$fileName');
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
@@ -258,10 +251,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                           child: const Text("Upload your CIN picture"),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      _pickedImage != null
-                          ? Image.file(_pickedImage!) // Display the picked image if available
-                          : Container(), // Empty container if no image is picked
                       const SizedBox(height: 20.0),
                       TextFormField(
                         controller: userTypeController,
