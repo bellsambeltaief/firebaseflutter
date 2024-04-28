@@ -69,7 +69,9 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
             // Navigate to the user-specific screen
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => const VendorHome(),
+                builder: (_) => VendorFilesWidget(
+                  vendorEmail: email,
+                ),
               ),
             );
           } else {

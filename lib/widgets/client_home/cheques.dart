@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:smart/widgets/client_home/success.dart';
+import 'package:smart/widgets/client_home/uploaded_files.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 
 class Cheques extends StatefulWidget {
@@ -128,6 +129,14 @@ class _ChequesState extends State<Cheques> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all the required fields'),
+        ),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UploadedFiles(
+            uploadedFileNames: _pickedImages,
+          ),
         ),
       );
       return;
