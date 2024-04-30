@@ -26,16 +26,17 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
   final passwordController = TextEditingController();
   String? emailError;
   String? passwordError;
+  String errorMessage = '';
   final _formKey = GlobalKey<FormState>();
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _logIn();
+    _logIn(context);
   }
 
   /// Connection to firebase
 
-  void _logIn() async {
+  void _logIn(BuildContext context) async {
     String email = emailController.text;
     String password = passwordController.text;
 
@@ -69,7 +70,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
             // Navigate to the user-specific screen
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => VendorFilesWidget(
+                builder: (_) => VendorHome(
                   vendorEmail: email,
                 ),
               ),
@@ -79,26 +80,35 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
             if (kDebugMode) {
               print("Unsupported user type: $userType");
             }
+            _updateErrorMessage('Unsupported user type: $userType');
           }
         } else {
           // Handle missing user data
           if (kDebugMode) {
             print("User data not found");
           }
+          _updateErrorMessage('User data not found');
         }
       } else {
         // Handle null user
         if (kDebugMode) {
-          print("User is null");
+          print("User isn't found");
         }
+        _updateErrorMessage("User isn't found");
       }
     } catch (e) {
       // Handle login error
       if (kDebugMode) {
         print("Login error: $e");
       }
-      // Display an error message or perform some other action
+      _updateErrorMessage('Login error: $e');
     }
+  }
+
+  void _updateErrorMessage(String message) {
+    setState(() {
+      errorMessage = message;
+    });
   }
 
   @override
@@ -171,7 +181,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                   const SizedBox(height: 40.0),
                   Button(
                     label: "Log In as a Vendor",
-                    onTap: _logIn,
+                    onTap: () => _logIn(context),
                   ),
                   NoAccount(
                     text1: 'You don\'t have an account ? ',

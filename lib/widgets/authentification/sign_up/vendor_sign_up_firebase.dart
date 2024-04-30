@@ -61,9 +61,9 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   /// Upload images to firebase
   Future<void> _uploadImage() async {
     if (_pickedImage != null) {
-      final userEmail = FirebaseAuth.instance.currentUser?.displayName;
+      final userId = FirebaseAuth.instance.currentUser?.uid;
       final fileName = _pickedImage!.path.split('/').last;
-      final storageRef = firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userEmail/$fileName');
+      final storageRef = firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userId/$fileName');
 
       try {
         await storageRef.putFile(_pickedImage!);
@@ -172,10 +172,10 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           }
 
           // Upload the image to storage
-          final userEmail = FirebaseAuth.instance.currentUser?.email;
+          final userId = FirebaseAuth.instance.currentUser?.uid;
           final fileName = _pickedImage!.path.split('/').last;
           final firebase_storage.Reference storageRef =
-              firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userEmail/$fileName');
+              firebase_storage.FirebaseStorage.instance.ref('VendorsImages/$userId/$fileName');
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
@@ -193,6 +193,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           }
           // Save vendor details to Firestore (excluding the password)
           await FirebaseFirestore.instance.collection('vendors').doc(user.uid).set({
+            'userId': user.uid,
             'email': email,
             'patentNumber': patentNumber,
             'companyName': companyName,

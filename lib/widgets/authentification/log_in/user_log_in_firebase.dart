@@ -25,16 +25,16 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String errorMessage = '';
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _logIn();
+    _logIn(context);
   }
 
   /// Connection to firebase
-
-  void _logIn() async {
+  void _logIn(BuildContext context) async {
     String email = emailController.text;
     String password = passwordController.text;
 
@@ -60,40 +60,59 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
               print("You are not a user");
             }
           } else if (userType == 'user') {
-            if (kDebugMode) {
-              print("Connection successfully");
+            // Retrieve the imagePath field from the document
+            String? imagePath = userData['imagePath'];
+            if (imagePath != null) {
+              if (kDebugMode) {
+                print("Connection successfully");
+              }
+              // Navigate to the user-specific screen
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ClientHome(),
+                ),
+              );
+            } else {
+              // Handle missing imagePath
+              if (kDebugMode) {
+                print("User imagePath not found");
+              }
+              _updateErrorMessage('User imagePath not found'); 
             }
-            // Navigate to the user-specific screen
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const ClientHome(),
-              ),
-            );
           } else {
             // Handle unsupported user type
             if (kDebugMode) {
               print("Unsupported user type: $userType");
             }
+            _updateErrorMessage('Unsupported user type: $userType'); 
           }
         } else {
           // Handle missing user data
           if (kDebugMode) {
             print("User data not found");
           }
+          _updateErrorMessage('User data not found');
         }
       } else {
         // Handle null user
         if (kDebugMode) {
-          print("User is null");
+          print("User isn't found");
         }
+        _updateErrorMessage("User isn't found");
       }
     } catch (e) {
       // Handle login error
       if (kDebugMode) {
         print("Login error: $e");
       }
-      // Display an error message or perform some other action
+      _updateErrorMessage('Login error: $e');
     }
+  }
+
+  void _updateErrorMessage(String message) {
+    setState(() {
+      errorMessage = message;
+    });
   }
 
   @override
@@ -166,8 +185,14 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                   const SizedBox(height: 40.0),
                   Button(
                     label: "Log In",
-                    onTap: _logIn, // Call login function here
+                    onTap: () => _logIn(context), 
                   ),
+                  errorMessage.isNotEmpty
+                      ? Text(
+                          errorMessage,
+                          style: const TextStyle(color: Colors.red),
+                        )
+                      : const SizedBox(),
                   NoAccount(
                     text1: 'You don\'t have an account ? ',
                     text2: "SignUp",

@@ -34,7 +34,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final imagePathController = TextEditingController();
   final Storage storage = Storage();
   final _formKey = GlobalKey<FormState>();
- File? _pickedImage;
+  File? _pickedImage;
 
   @override
   void didChangeDependencies() {
@@ -63,9 +63,9 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   /// Upload images to firebase
   Future<void> _uploadImage() async {
     if (_pickedImage != null) {
-      final userEmail = FirebaseAuth.instance.currentUser?.email;
+      final userId = FirebaseAuth.instance.currentUser?.uid;
       final fileName = _pickedImage!.path.split('/').last;
-      final storageRef = firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userEmail/$fileName');
+      final storageRef = firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userId/$fileName');
 
       try {
         await storageRef.putFile(_pickedImage!);
@@ -137,10 +137,10 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           }
 
           // Upload the image to storage
-          final userEmail = FirebaseAuth.instance.currentUser?.email;
+          final userId = FirebaseAuth.instance.currentUser?.uid;
           final fileName = _pickedImage!.path.split('/').last;
           final firebase_storage.Reference storageRef =
-              firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userEmail/$fileName');
+              firebase_storage.FirebaseStorage.instance.ref('UsersImages/$userId/$fileName');
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
