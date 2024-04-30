@@ -51,14 +51,14 @@ class _UserDetailsState extends State<UserDetails> {
   }
 
   Widget _buildUserDetails(Map<String, dynamic> userData) {
-    String fullName = '${userData['firstName'] ?? ''} ${userData['lastName'] ?? ''}';
+    String fullName = '${userData['userName'] ?? ''} ';
 
     return Column(
       children: <Widget>[
         Text(
           fullName.trim(),
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Colors.blue[900],
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),

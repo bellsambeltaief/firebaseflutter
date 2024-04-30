@@ -294,7 +294,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     },
                   ),
 
-                  const SizedBox(height: 20.0),
+                  const SizedBox(height: 10.0),
 
                   /// TextField pour le numéro du patente
                   TextFileds(
@@ -336,6 +336,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
                     label: 'CIN Number',
                     obscure: false,
                     input: TextInputType.number,
+                    maxLength: 8,
                     validate: (value) {
                       if (value!.isEmpty) {
                         return 'Please enter your CIN Number';

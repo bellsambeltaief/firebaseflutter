@@ -1,82 +1,94 @@
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-
-class VendorFilesWidget extends StatefulWidget {
+class VendorHome extends StatefulWidget {
   final String vendorEmail;
 
-  const VendorFilesWidget({super.key, required this.vendorEmail});
+  const VendorHome({
+    Key? key,
+    required this.vendorEmail,
+  }) : super(key: key);
 
   @override
-  _VendorFilesWidgetState createState() => _VendorFilesWidgetState();
+  State<VendorHome> createState() => _VendorHomeState();
 }
 
-class _VendorFilesWidgetState extends State<VendorFilesWidget> {
-  List<String> fileNames = [];
+class _VendorHomeState extends State<VendorHome> {
+  late Future<List<Map<String, dynamic>>> _imageData;
 
   @override
   void initState() {
     super.initState();
-    _getVendorFiles();
+    _imageData = _fetchImages();
   }
 
-  Future<void> _getVendorFiles() async {
-    try {
-      final storageRef =
-          firebase_storage.FirebaseStorage.instance.ref('vendors/${widget.vendorEmail}/cheques');
-      final ListResult result = await storageRef.listAll();
+  Future<List<Map<String, dynamic>>> _fetchImages() async {
+    print("imagesssssss: $_fetchImages");
+    List<Map<String, dynamic>> images = [];
+    var snapshot = await FirebaseFirestore.instance
+        .collection('vendorFolders')
+        .doc(widget.vendorEmail)
+        .collection('cheques')
+        .orderBy('uploadedAt', descending: true)
+        .get();
 
-      setState(() {
-        fileNames = result.items.map((ref) => ref.name).toList();
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error retrieving vendor files: $e');
-      }
+    if (kDebugMode) {
+      print("Number of documents in snapshot: ${snapshot.docs.length}");
     }
+    for (var doc in snapshot.docs) {
+      images.add({
+        'url': doc.data()['url'] as String,
+        'fileName': doc.data()['fileName'] as String,
+      });
+    }
+    if (kDebugMode) {
+      print("Number of images fetched: ${images.length}");
+    }
+    return images;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Vendor Files'),
-        ),
-        body: ListView.builder(
-          itemCount: fileNames.length,
-          itemBuilder: (context, index) {
-            final fileName = fileNames[index];
-            final storageRef = firebase_storage.FirebaseStorage.instance
-                .ref('vendors/${widget.vendorEmail}/cheques/$fileName');
-
-            return FutureBuilder(
-              future: storageRef.getDownloadURL(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return ListTile(
-                    title: Text(fileName),
-                    leading: const CircularProgressIndicator(),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return ListTile(
-                    title: Text(fileName),
-                    leading: const Icon(Icons.error),
-                  );
-                }
-
-                final imageUrl = snapshot.data as String;
-
+      appBar: AppBar(
+        title: const Text('Vendor Images'),
+        backgroundColor: Colors.blue[900],
+      ),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _imageData,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error fetching images: ${snapshot.error}'),
+            );
+          } else if (snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text('No images found'),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                var imageData = snapshot.data![index];
                 return ListTile(
-                  leading: Image.network(imageUrl),
-                  title: Text(fileName),
+                  leading: Image.network(
+                    imageData['url'] as String,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                  title: Text(imageData['fileName'] as String),
                 );
               },
             );
-          },
-        ));
+          }
+        },
+      ),
+    );
   }
 }

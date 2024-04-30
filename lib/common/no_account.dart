@@ -13,28 +13,24 @@ class NoAccount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 60.0),
-      child: TextButton(
-        onPressed: onTap,
-        child: RichText(
-          text: TextSpan(
-            style: const TextStyle(
-              fontSize: 16.0,
-              color: Colors.black,
-            ),
-            children: <TextSpan>[
-              TextSpan(
-                text: text1,
-                style: const TextStyle(color: Colors.grey),
-              ),
-            
-              TextSpan(
-                text: text2,
-                style: TextStyle(color: Colors.blue[900]),
-              ),
-            ],
+    return TextButton(
+      onPressed: onTap,
+      child: RichText(
+        text: TextSpan(
+          style: const TextStyle(
+            fontSize: 16.0,
+            color: Colors.black,
           ),
+          children: <TextSpan>[
+            TextSpan(
+              text: text1,
+              style: const TextStyle(color: Colors.grey),
+            ),
+            TextSpan(
+              text: text2,
+              style: TextStyle(color: Colors.blue[900]),
+            ),
+          ],
         ),
       ),
     );

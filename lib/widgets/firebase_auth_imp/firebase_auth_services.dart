@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
 class FirebaseAuthService {
@@ -192,6 +193,20 @@ class FirebaseAuthService {
     }
   }
 
+// Function to get image download URL from Firebase Storage
+  Future<String?> getImageDownloadUrl(String imagePath) async {
+    try {
+      Reference ref = FirebaseStorage.instance.ref().child(imagePath);
+      String downloadUrl = await ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error getting image download URL: $e");
+      }
+      return null;
+    }
+  }
+
   // Vendor-specific sign-in (could be expanded or modified as needed)
   Future<User?> signInVendor(String email, String password) async {
     try {
@@ -207,37 +222,6 @@ class FirebaseAuthService {
     } catch (e) {
       if (kDebugMode) {
         print("Error during vendor sign-in: $e");
-      }
-      return null;
-    }
-  }
-
-// Get image path from Firestore
-  Future<String?> getUserImagePath(String userId) async {
-    try {
-      // Attempt to fetch from 'vendors' collection first
-      DocumentSnapshot vendorSnapshot = await _firestore.collection('vendors').doc(userId).get();
-      if (vendorSnapshot.exists && vendorSnapshot.data() != null) {
-        var vendorData = vendorSnapshot.data() as Map<String, dynamic>;
-        return vendorData['imagePath'] as String?;
-      }
-
-      // If not found in 'vendors', check in 'users' collection
-      DocumentSnapshot userSnapshot = await _firestore.collection('users').doc(userId).get();
-      if (userSnapshot.exists && userSnapshot.data() != null) {
-        var userData = userSnapshot.data() as Map<String, dynamic>;
-        return userData['imagePath'] as String?;
-      }
-
-      // If no document is found
-      if (kDebugMode) {
-        print("No document found for the user or vendor with ID $userId");
-      }
-      return null;
-    } catch (e) {
-      // Handle any other errors
-      if (kDebugMode) {
-        print("Error retrieving image path: $e");
       }
       return null;
     }

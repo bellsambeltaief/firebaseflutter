@@ -138,7 +138,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
         ),
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(40.0),
+            padding: const EdgeInsets.all(20.0),
             child: Form(
               key: _formKey,
               child: Column(

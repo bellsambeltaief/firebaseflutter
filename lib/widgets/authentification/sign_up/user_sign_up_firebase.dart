@@ -35,6 +35,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
   final Storage storage = Storage();
   final _formKey = GlobalKey<FormState>();
   File? _pickedImage;
+  String? selectedMaritalStatus;
 
   @override
   void didChangeDependencies() {
@@ -93,7 +94,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
       String password = passwordController.text;
       String userType = userTypeController.text;
       int age = int.tryParse(ageController.text) ?? 0;
-      String maritalStatus = maritalStatusController.text;
       String imagePath = imagePathController.text;
       double salary = double.tryParse(salaryController.text) ?? 0.0;
       String employment = employmentController.text;
@@ -103,7 +103,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           password.isEmpty ||
           userType.isEmpty ||
           age <= 0 || // Adjusted validation condition for age
-          maritalStatus.isEmpty ||
+
           salary <= 0.0 || // Adjusted validation condition for salary
           employment.isEmpty) {
         if (kDebugMode) {
@@ -119,7 +119,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           userType,
           userName,
           age,
-          maritalStatus,
+          selectedMaritalStatus ?? "",
           salary,
           employment,
           imagePath,
@@ -164,7 +164,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
             'userName': userName,
             'userType': userType,
             'age': age,
-            'maritalStatus': maritalStatus,
+            'maritalStatus': selectedMaritalStatus,
             'salary': salary,
             'employment': employment,
             'password': password,
@@ -196,7 +196,6 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
     userNameController.dispose();
     userTypeController.dispose();
     ageController.dispose();
-    maritalStatusController.dispose();
     salaryController.dispose();
     employmentController.dispose();
     super.dispose();
@@ -252,72 +251,40 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   else
                     Container(),
                   const SizedBox(height: 20.0),
-                  TextFormField(
+                  TextFileds(
                     controller: userTypeController,
-                    decoration: InputDecoration(
-                      labelText: 'User',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
+                    label: 'User',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your Type';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 10.0),
 
-                  TextFormField(
+                  const SizedBox(height: 10.0),
+                  TextFileds(
                     controller: userNameController,
-                    decoration: InputDecoration(
-                      labelText: 'User Name',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
+                    label: 'FullName',
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your user name';
+                        return 'Please enter your FullName';
                       }
                       return null;
                     },
                   ),
 
                   const SizedBox(height: 10.0),
-
-                  const SizedBox(height: 10.0),
-                  TextFormField(
+                  TextFileds(
                     controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
+                    label: 'Email',
+                    obscure: false,
+                    input: TextInputType.emailAddress,
+                    validate: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter an email';
                       } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
@@ -326,6 +293,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 10.0),
 
                   /// TextField pour le mot de passe
@@ -344,22 +312,12 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                     },
                   ),
                   const SizedBox(height: 10.0),
-                  TextFormField(
+                  TextFileds(
                     controller: ageController,
-                    decoration: InputDecoration(
-                      labelText: 'Age',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
+                    label: 'Age',
+                    obscure: false,
+                    input: TextInputType.number,
+                    validate: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your age';
                       }
@@ -367,56 +325,61 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                     },
                   ),
                   const SizedBox(height: 10.0),
-                  TextFormField(
-                    controller: maritalStatusController,
-                    decoration: InputDecoration(
-                      labelText: 'Marital Status',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your Marital Status';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10.0),
-                  TextFormField(
+
+                  TextFileds(
                     controller: salaryController,
-                    decoration: InputDecoration(
-                      labelText: 'Salary',
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 10, 73, 167),
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
+                    label: "Salary",
+                    obscure: false,
+                    input: TextInputType.number,
+                    validate: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your Salary';
                       }
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 10.0),
-                  TextFormField(
+                  TextFileds(
                     controller: employmentController,
+                    label: "Employment",
+                    obscure: false,
+                    input: TextInputType.text,
+                    validate: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your Employment';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: selectedMaritalStatus,
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedMaritalStatus = newValue!;
+                      });
+                    },
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Single',
+                        child: Text('Single'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Married',
+                        child: Text('Married'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Divorced',
+                        child: Text('Divorced'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Another',
+                        child: Text('Another'),
+                      ),
+                    ],
                     decoration: InputDecoration(
-                      labelText: 'Employment',
+                      labelText: "Marital Status",
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -426,15 +389,15 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                         ),
                       ),
                     ),
-                    keyboardType: TextInputType.text,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your Employment';
+                        return 'Please select your marital status';
                       }
                       return null;
                     },
                   ),
+
+                  const SizedBox(height: 10.0),
                   const SizedBox(height: 20.0),
                   Button(
                     label: "Sign Up",

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "113432771088",
+    "project_id": "smart-1924e",
+    "storage_bucket": "smart-1924e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:113432771088:android:8b900409827cc1e4016895",
+        "android_client_info": {
+          "package_name": "anis.cherbel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOkDmUZCZD5ywis7XpGz1QMAnTKWdvHxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

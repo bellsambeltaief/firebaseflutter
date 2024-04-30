@@ -8,6 +8,8 @@ class TextFileds extends StatefulWidget {
     required this.obscure,
     required this.input,
     required this.validate,
+    this.maxLength,
+    this.minlength,
     this.error,
   });
 
@@ -17,6 +19,8 @@ class TextFileds extends StatefulWidget {
   final String? Function(String?)? validate;
   final String? error;
   final bool obscure;
+  final int? maxLength;
+  final int? minlength;
 
   @override
   State<TextFileds> createState() => _TextFiledsState();
@@ -42,6 +46,8 @@ class _TextFiledsState extends State<TextFileds> {
               ),
             ),
           ),
+          minLines: widget.minlength,
+          maxLength: widget.maxLength,
           keyboardType: widget.input,
           validator: widget.validate,
         ),

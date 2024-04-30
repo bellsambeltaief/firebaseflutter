@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:smart/common/button.dart';
+import 'package:smart/common/text_field.dart';
 import 'package:smart/widgets/client_home/cheques.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart'; // Importez le service Firebase
 
@@ -20,122 +22,99 @@ class _CheckEligibilityState extends State<CheckEligibility> {
 
   @override
   Widget build(BuildContext context) {
-    final Color customBlue800 = Colors.blue[800]!;
     return SafeArea(
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back,
-              color: Colors.white,
+              color: Colors.blue[900],
             ),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
-          title: const Text(
+          title: Text(
             'Check Eligibility',
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.blue[900],
             ),
           ),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
-        body: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.blue[800]!, Colors.blue[300]!],
-                  stops: const [0.2, 1],
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              const Spacer(flex: 1),
+              Align(
+                alignment: Alignment.topCenter,
+                child: Text(
+                  'Enter Item Price',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.blue[900],
+                  ),
                 ),
               ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    const Spacer(flex: 1),
-                    const Align(
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        'Enter Item Price',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _itemPriceController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide.none,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: 'Enter price',
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _itemPrice = double.tryParse(value) ?? 0.0;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                      child: ElevatedButton(
-                        onPressed:
-                            _checkEligibilityButtonPressed, // Appeler la fonction lors du clic sur le bouton
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.blue[800],
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50.0),
-                          ),
-                        ),
-                        child: Text(
-                          'Check Eligibility',
-                          style: TextStyle(
-                            color: customBlue800,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Spacer(flex: 1),
-                    const Text(
-                      'Your eligibility will be based on the entered item price and your infos.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                    const Spacer(flex: 3),
-                  ],
+              const SizedBox(height: 10),
+              TextFileds(
+                controller: _itemPriceController,
+                label: "Enter Price",
+                obscure: false,
+                minlength: 1,
+                input: const TextInputType.numberWithOptions(decimal: true),
+                validate: (value) {
+                  setState(() {
+                    _itemPrice = double.tryParse(value!) ?? 0.0;
+                  });
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                child: Button(
+                  label: "Check Eligbility",
+                  onTap: _checkEligibilityButtonPressed,
                 ),
               ),
-            ),
-          ],
+              const Spacer(flex: 1),
+              const Text(
+                'Your eligibility will be based on the entered item price and your infos.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black54,
+                ),
+              ),
+              const Spacer(flex: 3),
+            ],
+          ),
         ),
       ),
     );
   }
 
   // Fonction pour gérer le clic sur le bouton
-  // Dans la fonction _checkEligibilityButtonPressed()
+
   void _checkEligibilityButtonPressed() async {
     try {
+      double enteredPrice = double.tryParse(_itemPriceController.text) ?? 0.0;
+
+      if (enteredPrice < 1.0) {
+        // Show an error message if the entered price is less than 1
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Item price must be greater than or equal to 1."),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return; // Exit the function early if the price is invalid
+      }
       // Récupérer l'ID de l'utilisateur connecté
       String userId = FirebaseAuthService().getCurrentUserId();
 

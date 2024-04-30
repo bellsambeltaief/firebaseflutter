@@ -77,14 +77,14 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
               if (kDebugMode) {
                 print("User imagePath not found");
               }
-              _updateErrorMessage('User imagePath not found'); 
+              _updateErrorMessage('User imagePath not found');
             }
           } else {
             // Handle unsupported user type
             if (kDebugMode) {
               print("Unsupported user type: $userType");
             }
-            _updateErrorMessage('Unsupported user type: $userType'); 
+            _updateErrorMessage('Unsupported user type: $userType');
           }
         } else {
           // Handle missing user data
@@ -144,7 +144,7 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
         ),
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(40.0),
+            padding: const EdgeInsets.all(20.0),
             child: Form(
               key: _formKey,
               child: Column(
@@ -182,10 +182,10 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 40.0),
+                  const SizedBox(height: 10.0),
                   Button(
                     label: "Log In",
-                    onTap: () => _logIn(context), 
+                    onTap: () => _logIn(context),
                   ),
                   errorMessage.isNotEmpty
                       ? Text(
@@ -193,6 +193,7 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                           style: const TextStyle(color: Colors.red),
                         )
                       : const SizedBox(),
+                  const SizedBox(height: 20.0),
                   NoAccount(
                     text1: 'You don\'t have an account ? ',
                     text2: "SignUp",
