@@ -37,71 +37,75 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
   /// Connection to firebase
 
   void _logIn(BuildContext context) async {
-    String email = emailController.text;
-    String password = passwordController.text;
+    if (_formKey.currentState!.validate()) {
+      String email = emailController.text;
+      String password = passwordController.text;
 
-    // Check if all the fields aren't empty
-    // Check if all the fields aren't empty
-    if (email.isEmpty || password.isEmpty || !_formKey.currentState!.validate()) {
-      return;
-    }
+      // Check if all the fields aren't empty
+      if (email.isEmpty || password.isEmpty) {
+        if (kDebugMode) {
+          print("All fields must be filled.");
+        }
+        return;
+      }
 
-    try {
-      User? user = await _auth.signInWithEmailAndPassword(email, password);
+      try {
+        User? user = await _auth.signInWithEmailAndPassword(email, password);
 
-      if (user != null) {
-        // Retrieve the user document from Firestore
-        DocumentSnapshot userDocument =
-            await FirebaseFirestore.instance.collection('vendors').doc(user.uid).get();
-        // Retrieve the userType field from the document
-        Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
+        if (user != null) {
+          // Retrieve the user document from Firestore
+          DocumentSnapshot userDocument =
+              await FirebaseFirestore.instance.collection('vendors').doc(user.uid).get();
+          // Retrieve the userType field from the document
+          Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
 
-        if (userData != null) {
-          String? userType = userData['userType'];
+          if (userData != null) {
+            String? userType = userData['userType'];
 
-          if (userType == 'user') {
-            if (kDebugMode) {
-              print("You are not a user");
-            }
-          } else if (userType == 'vendor') {
-            if (kDebugMode) {
-              print("Connection successfully");
-            }
-            // Navigate to the user-specific screen
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => VendorHome(
-                  vendorEmail: email,
+            if (userType == 'user') {
+              if (kDebugMode) {
+                print("You are not a user");
+              }
+            } else if (userType == 'vendor') {
+              if (kDebugMode) {
+                print("Connection successfully");
+              }
+              // Navigate to the user-specific screen
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => VendorHome(
+                    vendorEmail: email,
+                  ),
                 ),
-              ),
-            );
-          } else {
-            // Handle unsupported user type
-            if (kDebugMode) {
-              print("Unsupported user type: $userType");
+              );
+            } else {
+              // Handle unsupported user type
+              if (kDebugMode) {
+                print("Unsupported user type: $userType");
+              }
+              _updateErrorMessage('Unsupported user type: $userType');
             }
-            _updateErrorMessage('Unsupported user type: $userType');
+          } else {
+            // Handle missing user data
+            if (kDebugMode) {
+              print("User data not found");
+            }
+            _updateErrorMessage('User data not found');
           }
         } else {
-          // Handle missing user data
+          // Handle null user
           if (kDebugMode) {
-            print("User data not found");
+            print("User isn't found");
           }
-          _updateErrorMessage('User data not found');
+          _updateErrorMessage("User isn't found");
         }
-      } else {
-        // Handle null user
+      } catch (e) {
+        // Handle login error
         if (kDebugMode) {
-          print("User isn't found");
+          print("Login error: $e");
         }
-        _updateErrorMessage("User isn't found");
+        _updateErrorMessage('Login error: $e');
       }
-    } catch (e) {
-      // Handle login error
-      if (kDebugMode) {
-        print("Login error: $e");
-      }
-      _updateErrorMessage('Login error: $e');
     }
   }
 
@@ -148,7 +152,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                   const Header(text: 'Please login in order to proceed'),
                   const SizedBox(height: 50.0),
                   TextFileds(
-                    error: emailError,
+                    error: errorMessage,
                     controller: emailController,
                     label: "Vendor Email",
                     obscure: false,
@@ -162,9 +166,8 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20.0),
                   TextFileds(
-                    error: passwordError,
+                    error: errorMessage,
                     controller: passwordController,
                     label: "Vendor Password",
                     obscure: true,
@@ -178,7 +181,7 @@ class _VendorLogFirebaseState extends State<VendorLogFirebase> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 40.0),
+                  const SizedBox(height: 10.0),
                   Button(
                     label: "Log In as a Vendor",
                     onTap: () => _logIn(context),

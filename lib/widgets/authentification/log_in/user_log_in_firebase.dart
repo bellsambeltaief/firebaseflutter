@@ -35,77 +35,83 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
 
   /// Connection to firebase
   void _logIn(BuildContext context) async {
-    String email = emailController.text;
-    String password = passwordController.text;
+    if (_formKey.currentState!.validate()) {
+      String email = emailController.text;
+      String password = passwordController.text;
 
-    // Check if all the fields aren't empty
-    if (email.isEmpty || password.isEmpty || !_formKey.currentState!.validate()) {
-      return;
-    }
-    try {
-      User? user = await _auth.signInWithEmailAndPassword(email, password);
+      // Check if all the fields aren't empty
+      if (email.isEmpty || password.isEmpty) {
+        if (kDebugMode) {
+          print("All fields must be filled.");
+        }
+        return;
+      }
 
-      if (user != null) {
-        // Retrieve the user document from Firestore
-        DocumentSnapshot userDocument =
-            await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        // Retrieve the userType field from the document
-        Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
+      try {
+        User? user = await _auth.signInWithEmailAndPassword(email, password);
 
-        if (userData != null) {
-          String? userType = userData['userType'];
+        if (user != null) {
+          // Retrieve the user document from Firestore
+          DocumentSnapshot userDocument =
+              await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+          // Retrieve the userType field from the document
+          Map<String, dynamic>? userData = userDocument.data() as Map<String, dynamic>?;
 
-          if (userType == 'vendor') {
-            if (kDebugMode) {
-              print("You are not a user");
-            }
-          } else if (userType == 'user') {
-            // Retrieve the imagePath field from the document
-            String? imagePath = userData['imagePath'];
-            if (imagePath != null) {
+          if (userData != null) {
+            String? userType = userData['userType'];
+
+            if (userType == 'vendor') {
               if (kDebugMode) {
-                print("Connection successfully");
+                print("You are not a user");
               }
-              // Navigate to the user-specific screen
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ClientHome(),
-                ),
-              );
+            } else if (userType == 'user') {
+              // Retrieve the imagePath field from the document
+              String? imagePath = userData['imagePath'];
+              if (imagePath != null) {
+                if (kDebugMode) {
+                  print("Connection successfully");
+                }
+                // Navigate to the user-specific screen
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ClientHome(),
+                  ),
+                );
+              } else {
+                // Handle missing imagePath
+                if (kDebugMode) {
+                  print("User imagePath not found");
+                }
+                _updateErrorMessage('User imagePath not found');
+              }
             } else {
-              // Handle missing imagePath
+              // Handle unsupported user type
               if (kDebugMode) {
-                print("User imagePath not found");
+                print("Unsupported user type: $userType");
               }
-              _updateErrorMessage('User imagePath not found');
+              _updateErrorMessage('Unsupported user type: $userType');
             }
           } else {
-            // Handle unsupported user type
+            // Handle missing user data
             if (kDebugMode) {
-              print("Unsupported user type: $userType");
+              print("User data not found");
             }
-            _updateErrorMessage('Unsupported user type: $userType');
+            _updateErrorMessage('User data not found');
           }
         } else {
-          // Handle missing user data
+          // Handle null user
           if (kDebugMode) {
-            print("User data not found");
+            print("User isn't found");
           }
-          _updateErrorMessage('User data not found');
+          _updateErrorMessage("User isn't found");
         }
-      } else {
-        // Handle null user
+      } catch (e) {
+        // Handle login error
         if (kDebugMode) {
-          print("User isn't found");
+          print("Login error: $e");
         }
-        _updateErrorMessage("User isn't found");
+        _updateErrorMessage('Login error: $e');
       }
-    } catch (e) {
-      // Handle login error
-      if (kDebugMode) {
-        print("Login error: $e");
-      }
-      _updateErrorMessage('Login error: $e');
     }
   }
 
@@ -167,7 +173,6 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20.0),
                   TextFileds(
                     controller: passwordController,
                     label: "Password",
@@ -187,12 +192,6 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                     label: "Log In",
                     onTap: () => _logIn(context),
                   ),
-                  errorMessage.isNotEmpty
-                      ? Text(
-                          errorMessage,
-                          style: const TextStyle(color: Colors.red),
-                        )
-                      : const SizedBox(),
                   const SizedBox(height: 20.0),
                   NoAccount(
                     text1: 'You don\'t have an account ? ',
