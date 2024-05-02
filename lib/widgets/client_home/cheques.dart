@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/text_field.dart';
 import 'package:smart/widgets/client_home/client_home.dart';
@@ -43,16 +42,6 @@ class _ChequesState extends State<Cheques> {
 
       for (File file in files) {
         final fileName = 'cheque_${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last}';
-
-        // Save the file to the user's folder
-        final userDir = await getApplicationDocumentsDirectory();
-        final userFolderPath = '${userDir.path}/userFolders/$userEmail/cheques/$duration';
-        final userFolder = Directory(userFolderPath);
-        if (!userFolder.existsSync()) {
-          userFolder.createSync(recursive: true);
-        }
-        final userFilePath = '$userFolderPath/$fileName';
-        await file.copy(userFilePath);
 
         // Upload the file to Firebase Storage for the user
         final userStorageRef = firebase_storage.FirebaseStorage.instance
@@ -118,9 +107,6 @@ class _ChequesState extends State<Cheques> {
 
     if (result != null) {
       List<File> files = result.paths.map((path) => File(path!)).toList();
-      setState(() {
-        _pickedImages.addAll(files);
-      });
       _uploadCheques(duration, files, vendorEmail);
     }
   }

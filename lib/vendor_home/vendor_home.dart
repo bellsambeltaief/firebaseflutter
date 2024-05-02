@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class VendorHome extends StatefulWidget {
@@ -15,71 +14,62 @@ class VendorHome extends StatefulWidget {
 }
 
 class _VendorHomeState extends State<VendorHome> {
-  late Future<List<Map<String, dynamic>>> _imageData;
-
   @override
   void initState() {
     super.initState();
-    _imageData = _fetchImages();
-  }
-
-  Future<List<Map<String, dynamic>>> _fetchImages() async {
-    List<Map<String, dynamic>> images = [];
-    var snapshot = await FirebaseFirestore.instance
-        .collection('cheques')
-        .where('vendorEmail', isEqualTo: widget.vendorEmail)
-        .orderBy('uploadedAt', descending: true)
-        .get();
-
-    for (var doc in snapshot.docs) {
-      images.add({
-        'downloadUrl': doc.data()['downloadUrl'] as String,
-        'fileName': doc.data()['fileName'] as String,
-      });
-    }
-
-    return images;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Vendor Images'),
+        title: const Text('Cheques List'),
         backgroundColor: Colors.blue[900],
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _imageData,
-        builder: (context, snapshot) {
+      body: FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('cheques')
+            .where('vendorEmail', isEqualTo: widget.vendorEmail)
+            .get(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error fetching images: ${snapshot.error}'),
-            );
-          } else if (snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text('No images found'),
-            );
-          } else {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                var imageData = snapshot.data![index];
-                return ListTile(
-                  leading: Image.network(
-                    imageData['downloadUrl'] as String,
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-                  title: Text(imageData['fileName'] as String),
-                );
-              },
-            );
           }
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Text('No cheques found for this vendor');
+          }
+
+          // Extract the list of documents from the snapshot
+          final documents = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: documents.length,
+            itemBuilder: (BuildContext context, int index) {
+              String imageUrl = documents[index].get('downloadUrl');
+              return ListTile(
+                leading: Image.network(
+                  imageUrl,
+                  width: 80,
+                  height: 80,
+                ),
+                title: Text(
+                  'Cheque ${index + 1}',
+                  style: TextStyle(
+                    color: Colors.blue[900],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(
+                  'Client: ${documents[index].get('userEmail')}',
+                ),
+              );
+            },
+          );
         },
       ),
     );
