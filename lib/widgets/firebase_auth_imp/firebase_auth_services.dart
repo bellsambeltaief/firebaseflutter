@@ -103,29 +103,33 @@ class FirebaseAuthService {
   }
 
 // Get user type from Firestore
-  Future<String?> getUserType(String userId) async {
+  Future<Map<String, dynamic>?> getUserType(String userId) async {
     try {
-      // Check if the user is a vendor
       DocumentSnapshot vendorSnapshot = await _firestore.collection('vendors').doc(userId).get();
       if (vendorSnapshot.exists && vendorSnapshot.data() != null) {
         var vendorData = vendorSnapshot.data() as Map<String, dynamic>;
-        return vendorData['userType'] as String?;
+        String folderPath = vendorData['folderPath'] as String;
+        List<String> imageList = await _getImageListFromStorage(folderPath);
+        return {
+          'userType': vendorData['userType'],
+          'imageList': imageList,
+        };
       }
 
-      // If the user is not a vendor, check if they are a regular user
       DocumentSnapshot userSnapshot = await _firestore.collection('users').doc(userId).get();
       if (userSnapshot.exists && userSnapshot.data() != null) {
         var userData = userSnapshot.data() as Map<String, dynamic>;
-        return userData['userType'] as String?;
+        return {
+          'userType': userData['userType'],
+          'imageList': [],
+        };
       } else {
-        // Handle the case where the document doesn't exist or data is null
         if (kDebugMode) {
           print("User document doesn't exist or data is null.");
         }
         return null;
       }
     } catch (e) {
-      // Handle any other errors
       if (kDebugMode) {
         print("Error retrieving user type: $e");
       }
@@ -193,6 +197,32 @@ class FirebaseAuthService {
     }
   }
 
+// Retrieve the image list from Firebase Storage
+  Future<List<String>> _getImageListFromStorage(String folderPath) async {
+    try {
+      // Create a reference to the folder in Firebase Storage
+      Reference storageRef = FirebaseStorage.instance.ref().child(folderPath);
+
+      // Get the list of items in the folder
+      ListResult listResult = await storageRef.listAll();
+
+      // Extract the download URLs of the images
+      List<String> imageList = [];
+      for (var item in listResult.items) {
+        String downloadURL = await item.getDownloadURL();
+        imageList.add(downloadURL);
+      }
+
+      return imageList;
+    } catch (e) {
+      // Handle any errors that occur during image retrieval
+      if (kDebugMode) {
+        print("Error retrieving image list from storage: $e");
+      }
+      return [];
+    }
+  }
+
 // Function to get image download URL from Firebase Storage
   Future<String?> getImageDownloadUrl(String imagePath) async {
     try {
@@ -213,7 +243,7 @@ class FirebaseAuthService {
       UserCredential credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       User? user = credential.user;
       if (user != null) {
-        String? userType = await getUserType(user.uid);
+        String? userType = getUserType as String?;
         if (userType == 'vendor') {
           return user;
         }

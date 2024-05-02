@@ -1,3 +1,4 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -43,7 +44,7 @@ class _ClientHomeState extends State<ClientHome> {
   @override
   Widget build(BuildContext context) {
     User? currentUser = FirebaseAuth.instance.currentUser;
-    String userId = currentUser?.uid ?? ''; // Obtain the user ID
+    String userId = currentUser?.uid ?? '';
     FirebaseAuthService authService = FirebaseAuthService();
 
     return SafeArea(
@@ -90,6 +91,28 @@ class _ClientHomeState extends State<ClientHome> {
                     }
                   },
                 ),
+
+                // /// Afficher l'image à partir de l'URL
+                // FutureBuilder<DocumentSnapshot>(
+                //   future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
+                //   builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                //     if (snapshot.connectionState == ConnectionState.waiting) {
+                //       return const CircularProgressIndicator();
+                //     }
+                //     if (snapshot.hasError) {
+                //       return Text('Error: ${snapshot.error}');
+                //     }
+                //     if (!snapshot.hasData || !snapshot.data!.exists) {
+                //       return const Text('Image not found');
+                //     }
+                //     String imageUrl = snapshot.data!.get('imagePath');
+                //     return Image.network(
+                //       imageUrl,
+                //       width: 200,
+                //       height: 200,
+                //     );
+                //  },
+                // ),
               ],
             ),
           ),

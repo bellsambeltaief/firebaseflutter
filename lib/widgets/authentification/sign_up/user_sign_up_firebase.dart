@@ -70,18 +70,22 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
 
       try {
         await storageRef.putFile(_pickedImage!);
-        final downloadURL = await storageRef.getDownloadURL();
+        final folderURL = await storageRef.getDownloadURL();
+        final imageURL = await storageRef.getDownloadURL();
         if (kDebugMode) {
-          print("Download URL: $downloadURL");
+          print("Download Image URL: $imageURL");
+          print("Download Folder URL: $folderURL");
         }
       } catch (e) {
         if (kDebugMode) {
           print("Failed to upload image: $e");
+          print("Failed to upload folder: $e");
         }
       }
     } else {
       if (kDebugMode) {
         print("No image picked");
+        print("No folder picked");
       }
     }
   }
@@ -144,7 +148,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
-          final downloadURL = await storageRef.getDownloadURL();
+          final imageURL = await storageRef.getDownloadURL();
 
           // Now you can proceed with the sign-up process with the image downloadURL
           final email = emailController.text;
@@ -152,7 +156,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
 
           // Perform your sign-up logic here, passing the downloadURL along with other user details
           if (kDebugMode) {
-            print("Signing up with email: $email, password: $password, imagePath: $downloadURL");
+            print("Signing up with email: $email, password: $password, imagePath: $imageURL");
           }
           if (_pickedImage != null) {
             await _uploadImage(); // Upload the picked image
@@ -168,7 +172,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
             'salary': salary,
             'employment': employment,
             'password': password,
-            'imagePath': downloadURL,
+            'imagePath': imageURL,
           });
 
           Navigator.of(context).push(
@@ -236,6 +240,7 @@ class _UserSignUpFirebaseState extends State<UserSignUpFirebase> {
                   const Header(
                     text: 'Please create your account in order to be able to benefit from our service!',
                   ),
+                  const SizedBox(height: 20.0),
                   Center(
                     child: ElevatedButton(
                       onPressed: _pickImage,

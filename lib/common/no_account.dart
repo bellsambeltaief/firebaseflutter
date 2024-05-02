@@ -28,7 +28,10 @@ class NoAccount extends StatelessWidget {
             ),
             TextSpan(
               text: text2,
-              style: TextStyle(color: Colors.blue[900]),
+              style: TextStyle(
+                color: Colors.blue[900],
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

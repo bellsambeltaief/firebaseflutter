@@ -24,27 +24,20 @@ class _VendorHomeState extends State<VendorHome> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchImages() async {
-    print("imagesssssss: $_fetchImages");
     List<Map<String, dynamic>> images = [];
     var snapshot = await FirebaseFirestore.instance
-        .collection('vendorFolders')
-        .doc(widget.vendorEmail)
         .collection('cheques')
+        .where('vendorEmail', isEqualTo: widget.vendorEmail)
         .orderBy('uploadedAt', descending: true)
         .get();
 
-    if (kDebugMode) {
-      print("Number of documents in snapshot: ${snapshot.docs.length}");
-    }
     for (var doc in snapshot.docs) {
       images.add({
-        'url': doc.data()['url'] as String,
+        'downloadUrl': doc.data()['downloadUrl'] as String,
         'fileName': doc.data()['fileName'] as String,
       });
     }
-    if (kDebugMode) {
-      print("Number of images fetched: ${images.length}");
-    }
+
     return images;
   }
 
@@ -77,7 +70,7 @@ class _VendorHomeState extends State<VendorHome> {
                 var imageData = snapshot.data![index];
                 return ListTile(
                   leading: Image.network(
-                    imageData['url'] as String,
+                    imageData['downloadUrl'] as String,
                     width: 100,
                     height: 100,
                     fit: BoxFit.cover,

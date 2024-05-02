@@ -173,6 +173,7 @@ class _UserLogFirebaseState extends State<UserLogFirebase> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 10.0),
                   TextFileds(
                     controller: passwordController,
                     label: "Password",

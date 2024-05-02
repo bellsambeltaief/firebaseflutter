@@ -32,6 +32,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
   final passwordController = TextEditingController();
   final userTypeController = TextEditingController();
   final imagePathController = TextEditingController();
+
   File? _pickedImage;
 
   @override
@@ -67,9 +68,10 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
 
       try {
         await storageRef.putFile(_pickedImage!);
-        final downloadURL = await storageRef.getDownloadURL();
+
+        final imageURL = await storageRef.getDownloadURL();
         if (kDebugMode) {
-          print("Download URL: $downloadURL");
+          print("Download Image URL: $imageURL");
         }
       } catch (e) {
         if (kDebugMode) {
@@ -179,14 +181,15 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
           await storageRef.putFile(_pickedImage!);
 
           // Get the download URL
-          final downloadURL = await storageRef.getDownloadURL();
+          final imageURL = await storageRef.getDownloadURL();
+
           // Now you can proceed with the sign-up process with the image downloadURL
           final email = emailController.text;
           final password = passwordController.text;
 
           // Perform your sign-up logic here, passing the downloadURL along with other user details
           if (kDebugMode) {
-            print("Signing up with email: $email, password: $password, imagePath: $downloadURL");
+            print("Signing up with email: $email, password: $password, imagePath: $imageURL");
           }
           if (_pickedImage != null) {
             await _uploadImage(); // Upload the picked image
@@ -201,7 +204,7 @@ class _VendorSignUpFirebaseState extends State<VendorSignUpFirebase> {
             'numeroCin': numeroCin,
             'userType': userType,
             'password': password,
-            'imagePath': downloadURL,
+            'imagePath': imageURL,
           });
         } else {
           if (kDebugMode) {

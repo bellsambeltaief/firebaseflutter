@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -7,7 +8,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:smart/common/button.dart';
 import 'package:smart/common/text_field.dart';
 import 'package:smart/widgets/client_home/client_home.dart';
-import 'package:smart/widgets/client_home/success.dart';
 import 'package:smart/widgets/firebase_auth_imp/firebase_auth_services.dart';
 
 class Cheques extends StatefulWidget {
@@ -29,31 +29,28 @@ class _ChequesState extends State<Cheques> {
   /// List of images
   final List<File> _pickedImages = [];
 
-  Future<void> _uploadCheques(String duration, List<File> files, String vendorEmail) async {
+  Future<void> _uploadCheques(
+    String duration,
+    List<File> files,
+    String vendorEmail,
+  ) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       final userEmail = user != null ? user.email : '';
 
-      // Get the directory for storing user files
-      final userDir = await getApplicationDocumentsDirectory();
-      final userFolderPath = '${userDir.path}/userFolders/$userEmail/cheques/$duration';
-      final userFolder = Directory(userFolderPath);
-      if (!userFolder.existsSync()) {
-        userFolder.createSync(recursive: true);
-      }
-
-      // Get the directory for storing vendor files
-      final vendorDir = await getApplicationDocumentsDirectory();
-      final vendorFolderPath = '${vendorDir.path}/vendorFolders/$vendorEmail/cheques/$duration';
-      final vendorFolder = Directory(vendorFolderPath);
-      if (!vendorFolder.existsSync()) {
-        vendorFolder.createSync(recursive: true);
-      }
+      // Get the Firestore collection reference
+      final collectionRef = FirebaseFirestore.instance.collection('cheques');
 
       for (File file in files) {
         final fileName = 'cheque_${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last}';
 
         // Save the file to the user's folder
+        final userDir = await getApplicationDocumentsDirectory();
+        final userFolderPath = '${userDir.path}/userFolders/$userEmail/cheques/$duration';
+        final userFolder = Directory(userFolderPath);
+        if (!userFolder.existsSync()) {
+          userFolder.createSync(recursive: true);
+        }
         final userFilePath = '$userFolderPath/$fileName';
         await file.copy(userFilePath);
 
@@ -62,14 +59,17 @@ class _ChequesState extends State<Cheques> {
             .ref('userFolders/$userEmail/cheques/$duration/$fileName');
         await userStorageRef.putFile(file);
 
-        // Copy the file to the vendor's folder
-        final vendorFilePath = '$vendorFolderPath/$fileName';
-        await file.copy(vendorFilePath);
+        // Generate download URL for the user's file
+        final userDownloadUrl = await userStorageRef.getDownloadURL();
 
-        // Upload the file to Firebase Storage for the vendor
-        final vendorStorageRef = firebase_storage.FirebaseStorage.instance
-            .ref('vendorFolders/$vendorEmail/cheques/$duration/$fileName');
-        await vendorStorageRef.putFile(file);
+        // Save the image information to Firestore
+        await collectionRef.add({
+          'duration': duration,
+          'vendorEmail': vendorEmail,
+          'userEmail': userEmail,
+          'fileName': fileName,
+          'downloadUrl': userDownloadUrl,
+        });
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -145,7 +145,7 @@ class _ChequesState extends State<Cheques> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const Success(),
+        builder: (context) => const ClientHome(),
       ),
     );
   }
