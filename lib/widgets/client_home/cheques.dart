@@ -47,6 +47,10 @@ class _ChequesState extends State<Cheques> {
         final userStorageRef = firebase_storage.FirebaseStorage.instance
             .ref('userFolders/$userEmail/cheques/$duration/$fileName');
         await userStorageRef.putFile(file);
+        // Upload the file to Firebase Storage for the vendor
+        final vendorStorageRef = firebase_storage.FirebaseStorage.instance
+            .ref('vendorFolders/$vendorEmail/cheques/$duration/$fileName');
+        await vendorStorageRef.putFile(file);
 
         // Generate download URL for the user's file
         final userDownloadUrl = await userStorageRef.getDownloadURL();
