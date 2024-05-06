@@ -34,12 +34,12 @@ class _WelcomeState extends State<Welcome> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.blue[900], // Adjust the color to match your branding
+        backgroundColor: Colors.blue[900],
         body: Center(
           child: Image.asset(
-            'assets/a.png', // Replace with the path to your logo file
-            width: 300, // Set this to the appropriate width for your logo
-            height: 120, // Set this to the appropriate height for your logo
+            'assets/a.png',
+            width: 300,
+            height: 120,
           ),
         ),
       ),
