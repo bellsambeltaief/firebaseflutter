@@ -16,7 +16,9 @@ class _WelcomeState extends State<Welcome> {
 
     Timer(
       const Duration(seconds: 4),
-      () => Navigator.of(context).pushReplacement(_createRoute()),
+      () => Navigator.of(context).pushReplacement(
+        _createRoute(),
+      ),
     );
   }
 

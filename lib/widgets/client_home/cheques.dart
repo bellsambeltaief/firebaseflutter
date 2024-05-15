@@ -111,6 +111,9 @@ class _ChequesState extends State<Cheques> {
 
     if (result != null) {
       List<File> files = result.paths.map((path) => File(path!)).toList();
+      setState(() {
+        _pickedImages.addAll(files);
+      });
       _uploadCheques(duration, files, vendorEmail);
     }
   }
